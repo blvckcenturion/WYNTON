@@ -1,0 +1,97 @@
+.dashboard-page{
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+    grid-template-areas: "sidebar main";
+    > div{
+        width: calc(100% - 2.5vmin);
+        height: calc(100% - 2.5vmin);
+        align-self: center;
+        justify-self: center;
+        &:nth-child(1){
+            grid-area: sidebar;
+            display: grid;
+            grid-template-columns: 100%;
+            grid-template-rows: 90% 10%;
+            grid-template-areas: "head" "footer";
+            > div{
+                width: 100%;
+                height: calc(100% - 1.25vmin);
+                align-self: center;
+                border-radius: 10px;
+                background-color: var(--bg-accent-light);
+                @media (prefers-color-scheme: dark){
+                    background-color: var(--bg-accent-dark);
+                }
+                
+                &:nth-child(1){
+                    align-self: start;
+                    grid-area: head;
+                    > div {
+                        width: 100%;
+                        &:nth-child(1){
+                            height: 15%;
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: space-evenly;
+                            svg{
+                                width: 6vh;
+                                height: 6vh;
+                            }
+                            h1{
+                                font-family: var(--main-font);
+                                font-size: 3vh;
+                            }
+                        }
+                        &:nth-child(2){
+                            height: 85%;
+                            display: flex;
+                            justify-content: flex-start;
+                            align-items: center;
+                            flex-direction: column;
+                            
+                        }
+                    }
+                }
+                &:nth-child(2){
+                    align-self:end;
+                    grid-area: footer;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-evenly;
+                    svg {
+                        width: 20%;
+                        height: 80%;
+                        color: var(--accent-color-1);
+                    }
+                    div{
+                        width: 70%;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-evenly;
+                        align-items: flex-start;
+                        color: var(--accent-color-1);
+                        h3{
+                            font-size: 2vh;
+                        }
+
+                        h4{
+                            font-size: 1.5vh;
+                        }
+                    }
+                } 
+            }
+        }
+        &:nth-child(2){
+            grid-area: main;
+            background-color: blue;
+        }
+    }
+    @media(min-width: 1400px){
+        grid-template-columns: 15% 85%;
+    }
+
+}
