@@ -1,10 +1,9 @@
-
 /* Pages */
 @import "./pages/login.css";
 @import "./pages/dashboard.css";
 
 /* Components */
-@import './components/dashboard/MenuItem.css';
+@import './components/dashboard/NavigationOption.css';
 
 /* Variables */
 @import "./variables.css";
@@ -25,6 +24,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+  }
+
+  body{
+    transition: all .3s ease-in-out;
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
   }
   
   .container {
@@ -163,4 +170,13 @@ body{
     align-items: center;
     width: 30px;
     height: 30px;
+}
+
+.page{
+  transition: all .3s ease-in-out;
+  -webkit-user-select: none; /* Safari */        
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+  overflow: hidden;
 }

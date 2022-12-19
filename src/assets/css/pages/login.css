@@ -1,7 +1,6 @@
 .login-page{
     display: flex;
     flex-direction: row;
-    overflow: hidden;
     > div {
         height: 100%;
     }

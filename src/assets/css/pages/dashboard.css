@@ -1,8 +1,9 @@
 .dashboard-page{
     display: grid;
-    grid-template-columns: 20% 80%;
+    grid-template-columns: 25% 75%;
     grid-template-rows: 100%;
     grid-template-areas: "sidebar main";
+    
     > div{
         width: calc(100% - 2.5vmin);
         height: calc(100% - 2.5vmin);
@@ -71,15 +72,22 @@
                         height: 100%;
                         display: flex;
                         flex-direction: column;
-                        justify-content: space-evenly;
+                        justify-content: center;
                         align-items: flex-start;
                         color: var(--accent-color-1);
+                        text-align:start;
                         h3{
                             font-size: 2vh;
+                            margin-top: 5%;
+                            margin-bottom:5%;
+                            height: 30%;
+                            line-height: 2.5vh;
+                            font-family: var(--main-font);
                         }
 
                         h4{
-                            font-size: 1.5vh;
+                            height:50%;
+                            font-size: 1.8vh;
                         }
                     }
                 } 

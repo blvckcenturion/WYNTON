@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-
-const MenuItem = ({title, icon, onClick, active}) => {
+const NavigationOption = ({title, icon, onClick, active}) => {
     return (
         <div className={`menu-item ${active && "active"} `} onClick={onClick}>
             <FontAwesomeIcon icon={icon} />
@@ -10,4 +9,4 @@ const MenuItem = ({title, icon, onClick, active}) => {
     )
 }
 
-export default MenuItem;
+export default NavigationOption;
