@@ -3,9 +3,27 @@
     --bg-color-dark: #292929;
     --bg-accent-light: #ffffff;
     --bg-accent-dark: #0f0f0f98;
+    --bg-accent-hover-light: #F5F5F5;
+    --bg-accent-hover-dark: #1f1f1f98;
     --main-font: 'Prompt';
     --secondary-font: 'Poppins';   
     --main-color: #6200FF;
     --accent-color-1: #8F5CFF;
-    
+}
+
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: var(--bg-color-dark);
+        --bg-accent: var(--bg-accent-dark);
+        --bg-accent-hover: var(--bg-accent-hover-dark);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg-color: var(--bg-color-light);
+        --bg-accent: var(--bg-accent-light);
+        --bg-accent-hover: var(--bg-accent-hover-light);
+    }
 }

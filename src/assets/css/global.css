@@ -133,23 +133,12 @@
 body{
     font-family: 'Poppins', sans-serif;
     border-radius: 10px;
+    background-color: var(--bg-color);
 }
 
 .page{
     width: 100vw;
     height: 100vh;
-}
-
-@media (prefers-color-scheme: dark){
-    body{
-        background-color: var(--bg-color-dark);
-    }
-}
-
-@media (prefers-color-scheme: light){
-    body{
-        background-color: var(--bg-color-light);
-    }
 }
 
 .titlebar {
@@ -177,4 +166,29 @@ body{
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
   overflow: hidden;
+}
+
+input{
+    border: 1px solid transparent;
+    transition: all 0.3s ease-in-out;
+    &:focus{
+        outline: none;
+        border: 1px solid var(--main-color);
+    }
+}
+
+form{
+  button{
+    background-color: var(--acent-color-1);
+    color: white;
+    transition: all 0.3s ease-in-out;
+    &:hover{
+        background-color: var(--main-color);
+    }
+
+    &:focus{
+        outline: none;
+        background-color: var(--main-color);
+    }
+  }
 }

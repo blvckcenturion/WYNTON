@@ -1,4 +1,4 @@
-@import "./NavigationOption.css";
+@import "./components/NavigationOption.css";
 
 .dashboard-page{
     display: grid;
@@ -79,11 +79,11 @@
                         color: var(--accent-color-1);
                         text-align:start;
                         h3{
-                            font-size: 2vh;
+                            font-size: 1rem;
                             margin-top: 5%;
                             margin-bottom:5%;
                             height: 30%;
-                            line-height: 2.5vh;
+                            line-height: 2vh;
                             font-family: var(--main-font);
                         }
 
@@ -96,8 +96,15 @@
             }
         }
         &:nth-child(2){
+            @apply shadow;
             grid-area: main;
-            background-color: blue;
+            border-radius: 10px;
+            background-color: var(--bg-accent-light);
+            @media (prefers-color-scheme: dark){
+                background-color: var(--bg-accent-dark);
+            }
+            
+            
         }
     }
     @media(min-width: 1400px){
