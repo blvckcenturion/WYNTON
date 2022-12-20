@@ -1,10 +1,10 @@
 import { useState } from "react";
 import Logo from "../../assets/logo"
-import NavigationOption from "../../components/dashboard/NavigationOption"
+import NavigationOption from "../../modules/dashboard/NavigationOption"
 import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { faUser, faBellConcierge } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Menu from '../../components/menu/Menu';
+import Menu from '../../modules/menu/Menu';
 
 const Dashboard = () => {
     const [tab, setTab] = useState(1)

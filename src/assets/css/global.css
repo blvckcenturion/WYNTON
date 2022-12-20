@@ -1,12 +1,10 @@
-/* Pages */
-@import "./pages/login.css";
-@import "./pages/dashboard.css";
-
-/* Components */
-@import './components/dashboard/NavigationOption.css';
-
 /* Variables */
 @import "./variables.css";
+
+/* Modules */
+@import "./modules/menu/index.css";
+@import "./modules/dashboard/index.css";
+@import "./modules/auth/index.css";
 
 @tailwind base; 
 @tailwind components; 

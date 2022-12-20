@@ -1,3 +1,5 @@
+@import "./NavigationOption.css";
+
 .dashboard-page{
     display: grid;
     grid-template-columns: 25% 75%;
