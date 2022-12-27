@@ -14,9 +14,12 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@tailwindcss/nesting": "^0.0.0-insiders.565cd3e",
     "@tauri-apps/api": "^1.2.0",
+    "formik": "^2.2.9",
     "next": "^12.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-toastify": "^9.1.1",
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.2.2",

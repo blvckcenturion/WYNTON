@@ -10,13 +10,13 @@ const Menu = () => {
         setTab(t)
     }
 
-    const Render = () => {
+    const Render = () : JSX.Element => {
         switch(tab){
             case 1:
                 return <ViewMenu/>
             case 2:
                 return <AddProduct/>
-            case 3:
+            default:
                 return <AddCategory/>
         }
     }
@@ -24,9 +24,9 @@ const Menu = () => {
     return (
         <div className="menu-module">
             <div>
-                <button className={tab == 1 && "active"} onClick={() => handleToggle(1)} >Menu</button>
-                <button className={tab == 2 && "active"} onClick={() => handleToggle(2)} >Agregar Producto</button>
-                <button className={tab == 3 && "active"} onClick={() => handleToggle(3)}>Agregar Categoria</button>
+                <button className={tab == 1 ? "active" : undefined} onClick={() => handleToggle(1)} >Menu</button>
+                <button className={tab == 2 ? "active" : undefined} onClick={() => handleToggle(2)} >Agregar Producto</button>
+                <button className={tab == 3 ? "active" : undefined} onClick={() => handleToggle(3)}>Agregar Categoria</button>
             </div>
             <div>
                 <Render/>

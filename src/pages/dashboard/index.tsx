@@ -13,11 +13,11 @@ const Dashboard = () => {
         setTab(t)
     }
  
-    const Render = () => {
+    const Render = () : JSX.Element => {
         switch(tab){
             case 1:
                 return <Menu/>
-            case 2:
+            default:
                 return (<h1>Hola Mundo</h1>)
         }
     }
