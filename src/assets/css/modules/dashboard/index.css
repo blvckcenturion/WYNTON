@@ -27,6 +27,7 @@
                     background-color: var(--bg-accent-dark);
                 }
                 
+                
                 &:nth-child(1){
                     align-self: start;
                     grid-area: head;
@@ -103,8 +104,6 @@
             @media (prefers-color-scheme: dark){
                 background-color: var(--bg-accent-dark);
             }
-            
-            
         }
     }
     @media(min-width: 1400px){

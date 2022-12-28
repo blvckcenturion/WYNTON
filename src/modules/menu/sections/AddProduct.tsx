@@ -3,10 +3,14 @@ import { toast } from 'react-toastify'
 import { invoke } from '@tauri-apps/api'
 import { z } from "zod"
 import { useFormik } from 'formik'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { open } from '@tauri-apps/api/dialog';
+import { faFileCirclePlus, faFileImage} from '@fortawesome/free-solid-svg-icons'
+import { type } from 'os'
 
 const AddProduct = () => {
   const [categories, setCategories] = useState([]);
-  const [photo, setPhoto] = useState(undefined);
+  const [photo, setPhoto] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -21,7 +25,7 @@ const AddProduct = () => {
   }, [])
 
   const Product = z.object({
-    name: z.string().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}).trim(),
+    name: z.string().trim().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}),
     price: z.number({
       invalid_type_error: "El precio debe ser un numero valido.",
       required_error: "El precio del producto es requerido."
@@ -41,12 +45,10 @@ const AddProduct = () => {
       category_id: -1,
     },
     onSubmit: async (values) => {
-      console.log(values);
-      console.log(photo);
       try {
-        let prod = Product.parse(values);
+        let prod = Product.parse(values); 
         prod.name = prod.name.toLowerCase();
-        prod.description = prod.description.toLowerCase();
+        prod.description = prod.description.toLowerCase(); 
         // let res : string = await invoke("add_product", formik.values);
         // let product : any = JSON.parse(res);
         // toast.success("Producto agregado exitosamente");
@@ -59,6 +61,24 @@ const AddProduct = () => {
       }
     }
   })
+
+  const handleImage = async () => {
+    try {
+      let res : any = await open({
+        multiple: false,
+        directory: false,
+        filters: [
+          { name: 'Image', extensions: ['jpg', 'png', 'jpeg'] }
+        ]
+      });
+
+      if(res == null) setPhoto("");
+      setPhoto(res);
+      console.log(photo);
+    } catch ( e: any) {
+      toast.error(e.message);  
+    }
+  }
   
 
   return (
@@ -100,7 +120,21 @@ const AddProduct = () => {
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
                 Imagen del producto
               </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="file" accept="image/png, image/jpeg" onChange={formik.handleChange("photo")} onChange={(e : any) => setPhoto(e.target.files[0])}/>
+              <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline photo" id="productPhoto" onClick={handleImage}>
+                {photo.length == 0 && (
+                  <>
+                    <FontAwesomeIcon icon={faFileCirclePlus}></FontAwesomeIcon>
+                    <p>Escoger imagen</p>
+                  </>
+                )}
+                {photo.length > 0 && (
+                  <>
+                    <FontAwesomeIcon icon={faFileImage}></FontAwesomeIcon>
+                    
+                    <p>{photo.toString()?.slice(-100)}</p>
+                  </>
+                )}
+              </div>
             </div>
             <div className="flex items-center justify-between flex-col">
               <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">

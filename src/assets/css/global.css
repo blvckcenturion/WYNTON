@@ -168,12 +168,15 @@ body{
   overflow: hidden;
 }
 
-input{
+input, select{
     border: 1px solid transparent;
     transition: all 0.3s ease-in-out;
     &:focus{
         outline: none;
         border: 1px solid var(--main-color);
+    }
+    &:hover{
+        @apply shadow-lg;
     }
 }
 

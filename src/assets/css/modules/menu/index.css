@@ -12,7 +12,10 @@
     > div {
         
         &:nth-child(1){
-            width: 80%;
+            width: 90%;
+            @media screen and (min-width: 1468px) {
+                width: 85%;
+            }
             height: 10%;    
             display: flex;
             justify-content: space-evenly;
