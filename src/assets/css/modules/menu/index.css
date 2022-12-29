@@ -1,6 +1,6 @@
 @import "./components/ViewMenu.css";
-@import "./components/AddProduct.css";
-@import "./components/AddCategory.css";
+@import "./components/Products.css";
+@import "./components/Categories.css";
 
 .menu-module{
     width: 100%;

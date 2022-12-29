@@ -39,6 +39,12 @@ fn main() {
             commands::category::get_category,
             commands::category::get_all_category,
             commands::category::find_by_name_category,
+            // commands::product::create_product,
+            // commands::product::update_product,
+            // commands::product::delete_product,
+            // commands::product::get_product,
+            // commands::product::get_all_product,
+            // commands::product::find_by_name_product,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

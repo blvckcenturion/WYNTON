@@ -6,9 +6,8 @@ import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { faFileCirclePlus, faFileImage} from '@fortawesome/free-solid-svg-icons'
-import { type } from 'os'
 
-const AddProduct = () => {
+const Products = () => {
   const [categories, setCategories] = useState([]);
   const [photo, setPhoto] = useState<string>("");
 
@@ -146,4 +145,4 @@ const AddProduct = () => {
   )
 }
 
-export default AddProduct
+export default Products

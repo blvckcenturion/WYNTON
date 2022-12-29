@@ -182,11 +182,12 @@ input, select{
 
 form{
   button{
-    background-color: var(--acent-color-1);
-    color: white;
+    background-color: var(--accent-color-1);
+    color: white; 
     transition: all 0.3s ease-in-out;
     &:hover{
         background-color: var(--main-color);
+        border-color: transparent;
     }
 
     &:focus{
