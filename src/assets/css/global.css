@@ -5,6 +5,8 @@
 @import "./modules/menu/index.css";
 @import "./modules/dashboard/index.css";
 @import "./modules/auth/index.css";
+@import "./modules/utils/index.css";
+
 
 @tailwind base; 
 @tailwind components; 
@@ -136,6 +138,71 @@ body{
     background-color: var(--bg-color);
 }
 
+.form-search{
+  width: 90%;
+        @media screen and (min-width: 1468px) {
+            width: 85%;
+        }
+        height: 15%;
+        @media screen and (min-width: 1600px){
+            height: 10%;
+        }
+
+        input{
+            background-color: var(--bg-color);
+            height: 50%;
+        }
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        > div{
+            @media screen and (min-width: 1600px){
+                &:nth-child(1){
+                    width: 60%;
+                }
+                &:nth-child(2){
+                    width: 40%;
+                }
+            }
+            justify-content: flex-end;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 50%;
+            &:nth-child(2){
+                justify-content: flex-end;
+                flex-direction: row;
+                align-items: flex-end;
+                button{
+                    height: 50%;
+                    width: 75%;
+                    padding-top: 0;
+                    padding-bottom: 0;
+                    background-color: var(--accent-color-1);
+                    color: white;
+                    transition: all 0.3s ease-in-out;
+                    display: flex;
+                    justify-content: space-evenly;
+                    align-items: center;
+
+                    
+                    /* margin-bottom: 10px; */
+                    &:hover{
+                        background-color: var(--main-color);
+                    }
+        
+                    &:focus{
+                        outline: none;
+                        background-color: var(--main-color);
+                    }
+                }
+            }
+            
+            
+        }
+}
+
 .page{
     width: 100vw;
     height: 100vh;
@@ -194,5 +261,112 @@ form{
         outline: none;
         background-color: var(--main-color);
     }
+  }
+}
+
+
+.section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  > div{
+      width: 100%;
+      text-align: center;
+      
+      color: var(--main-color);
+      font-size: 2rem;
+  }
+}
+
+div.item-table {
+  > div{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    > p{
+        width: 100%;
+        text-align: center;
+        color: var(--accent-color-1);
+        font-size: 2rem;
+    }
+  }
+
+
+  scrollbar-gutter: stable;
+  &::-webkit-scrollbar {
+      width: 10px;
+  }
+  
+  &::-webkit-scrollbar-track {
+      background-color: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+      background-color: var(--main-color);
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+  height: 80%;
+  width: 90%;
+  @media screen and (min-width: 1468px) {
+      width: 85%;
+  }
+  @apply shadow-md;
+  border-radius: 10px;
+  background-color: var(--bg-color);
+  padding: 15px;
+  overflow: auto;
+  table{
+      width: 100%;
+  }
+
+  table, th, td {
+    border: 1px solid var(--main-color);
+    border-collapse: collapse;
+    thead{
+        background-color: var(--main-color);
+        color: var(--bg-color);
+    }
+    tbody{
+      tr{
+        > td:nth-child(-1){
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+      }
+      button {
+          width: 90%;
+          transition: all 0.5s ease-in-out;
+          &:nth-child(1){
+            @apply m-3;
+            border: 1px solid var(--main-color);
+            color: var(--main-color);
+            
+            &:hover{
+                background-color: var(--main-color);
+                color: var(--bg-color);
+            }
+          }
+          &:nth-child(2){
+              @apply m-3;
+              border: 1px solid red;
+              color: red;
+              &:hover{
+                  background-color: red;
+                  color: var(--bg-color);
+              }
+          }
+      }
+    }
+    font-size: 1rem;
   }
 }

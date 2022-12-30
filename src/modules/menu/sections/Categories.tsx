@@ -13,6 +13,7 @@ const Categories = () => {
   const [categoryEdit, setCategoryEdit] = useState<any>(null);
   const [categorySearch, setCategorySearch] = useState<any[] | null>(null);
   const [showCategoryForm, setShowCategoryForm] = useState<boolean>(false);
+  const [categoryDelete, setCategoryDelete] = useState<any | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -31,15 +32,21 @@ const Categories = () => {
     }
   }
 
-  const deleteCategory = async (id : number) => {
+  const deleteCategory = async () => {
+    
     try {
-      await invoke("delete_category", {id}).then((res) => {
+      await invoke("delete_category", {id: categoryDelete}).then((res) => {
         toast.success("Categoria eliminada correctamente.");
       });
       await getCategories();
+      setCategoryDelete(null);
     } catch(e: any) {
       toast.error(e.message);
     }
+  }
+
+  const cancelDeleteCategory = () => {
+    setCategoryDelete(null);
   }
 
   const handleCategory = (e : any) => {
@@ -49,7 +56,7 @@ const Categories = () => {
         if (el.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || el.name.trim().includes(e.target.value.trim().toLowerCase())){
           console.log(el.name.toLowerCase() + " = " + e.target.value.toLowerCase())
           return el;
-        }
+        } 
       })
       console.log(cat)
       setCategorySearch(cat);
@@ -64,14 +71,13 @@ const Categories = () => {
     return categories.map((category : any) => {
       return (
         <tr key={category.id}>
-          <td>{category.id}</td>
           <td>{category.name}</td>
           <td>{category.updated_at == null ? new Date(category.created_at).toLocaleString() : new Date(category.updated_at).toLocaleString()}</td>
           <td>
             <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => editCategory(category)}>
               Editar
             </button>
-            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => deleteCategory(category.id)}>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => setCategoryDelete(category.id)}>
               Eliminar
             </button>
           </td>
@@ -92,13 +98,13 @@ const Categories = () => {
 
   return (
     <>
-    <div className="add-category-section">
-        <form>
+    <div className="add-category-section section">
+        <form className='form-search'>
             <div>
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="categoryName">
                 Nombre de la categoria
               </label>
-              <input placeholder="Buscar categorias..."className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategory} value={category}/>
+              <input placeholder="Buscar categorias"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategory} value={category}/>
             </div>
             <div>
               <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addCategory}>
@@ -107,25 +113,64 @@ const Categories = () => {
               </button>
             </div>
         </form>
-        <div className="table">
-          <table className="table-auto">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Ultima actualizacion</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories != null && categorySearch == null && showCategories(categories)}
-              {categorySearch != null && showCategories(categorySearch)}
-            </tbody>
-          </table>
+        <div className="table item-table">
+          {categories.length == 0 && categorySearch == null && (
+            <div>
+              <p>No hay categorias registradas.</p>
+            </div>
+          )}
+          {categorySearch != null && categorySearch.length == 0 && (
+            <div>
+              <p>No hay resultados para la busqueda.</p>
+            </div>
+          )}
+          {(categories != null || categorySearch != null) && (categories?.length > 0 && categorySearch == null || categorySearch != null && categorySearch?.length > 0) && (
+            <table className="table-auto">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Ultima actualizacion</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories != null && categorySearch == null && showCategories(categories)}
+                {categorySearch != null && showCategories(categorySearch)}
+              </tbody>
+            </table>
+          )}
         </div>
     </div>
     {showCategoryForm && <CategoryForm setShowCategoryForm={setShowCategoryForm} getCategories={getCategories} category={categoryEdit} categories={categories}/>}
+    {categoryDelete != null && <CategoryDelete title={"Eliminar categoria"} body={"¿Estas seguro de eliminar esta categoria?"} onConfirm={deleteCategory} onCancel={cancelDeleteCategory}/>}
     </>
+  )
+}
+
+
+const CategoryDelete = ({title, body, onConfirm, onCancel} : {title: string, body : string, onConfirm : any, onCancel : any}) => {
+  const bgClose = (e : any) => {
+    const modal = document.getElementById("modal-wrapper");
+    if (e.target === modal){
+      onCancel();
+    }
+  }
+
+  return (
+    <div className='modal' id='modal-wrapper' onClick={bgClose}>
+      <div className='modal-content'>
+        <div className='modal-header'>
+          <h2>{title}</h2>
+        </div>
+        <div className='modal-body'>
+          <p>{body}</p>
+        </div>
+        <div className='modal-footer'>
+          <button className='btn btn-cancel' onClick={onCancel}>Cancelar</button>
+          <button className='btn btn-confirm' onClick={onConfirm}>Eliminar</button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -145,7 +190,7 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
       cat.name = cat.name.toLowerCase();
       try {
         let filtered = categories.filter((el : any) => { if (el.name.trim().toLowerCase() === cat.name.trim().toLowerCase() && el.id !== category.id) return el; });
-        if (filtered.length > 0) {
+        if (filtered.length > 0 && category.id !== filtered[0].id) {
           throw new Error("Ya existe una categoria con ese nombre.");
         }
         await invoke("update_category", {id: category.id, name: cat.name});
@@ -200,7 +245,7 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
   }
 
   return (
-    <div className='add-category-modal' id="add-category-modal" onClick={bgClose}>
+    <div className='add-category-modal modal' id="add-category-modal" onClick={bgClose}>
       <div>
         <h1 className="text-2xl font-bold">Agregar categoria</h1>
         <form onSubmit={category === null ? createCategory.handleSubmit : editCategory.handleSubmit}>

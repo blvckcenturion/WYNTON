@@ -12,33 +12,18 @@
         color: var(--main-color);
         font-size: 2rem;
     }
-    > form{
-        width: 80%;
-        height: 80%;
-        @media screen and (min-width: 1400px){
-            width: 50%;
+    .photo {
+        border-color: transparent;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        transition: all 1s ease-in-out;
+        &:hover{
+            @apply shadow-lg;
         }
-
-        input, select, .photo{
-            background-color: var(--bg-color);
-        }
-        button{
-            background-color: var(--accent-color-1);
-        }
-        
-        .photo {
-            border-color: transparent;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            transition: all 1s ease-in-out;
-            &:hover{
-                @apply shadow-lg;
-            }
-            svg{
-                padding:0 10px;
-            }
+        svg{
+            padding:0 10px;
         }
     }
 }
