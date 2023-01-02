@@ -160,7 +160,7 @@ const CategoryDelete = ({title, body, onConfirm, onCancel} : {title: string, bod
     <div className='modal' id='modal-wrapper' onClick={bgClose}>
       <div className='modal-content'>
         <div className='modal-header'>
-          <h2>{title}</h2>
+          <h1>{title}</h1>
         </div>
         <div className='modal-body'>
           <p>{body}</p>
@@ -247,7 +247,7 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
   return (
     <div className='add-category-modal modal' id="add-category-modal" onClick={bgClose}>
       <div>
-        <h1 className="text-2xl font-bold">Agregar categoria</h1>
+        <h1 className="text-2xl font-bold">{category === null ? "Agregar categoria" : "Editar categoria"}</h1>
         <form onSubmit={category === null ? createCategory.handleSubmit : editCategory.handleSubmit}>
           <div>
             <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="addCategoryName">
@@ -255,8 +255,8 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
             </label>
             <input className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="addCategoryName" type="text" value={category === null ? createCategory.values.name : editCategory.values.name} onChange={category === null ? createCategory.handleChange("name") : editCategory.handleChange("name")}/>
           </div>
-          <div>
-            <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
+          <div className="flex items-center justify-between flex-col form-submit">
+            <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline form-submit" type="submit">
                 <FontAwesomeIcon icon={faSave} />
                 &nbsp;{category === null ? "Agregar" : "Guardar"}
             </button>

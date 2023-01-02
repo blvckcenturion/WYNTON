@@ -248,18 +248,34 @@ input, select{
 }
 
 form{
-  button{
-    background-color: var(--accent-color-1);
-    color: white; 
-    transition: all 0.3s ease-in-out;
-    &:hover{
-        background-color: var(--main-color);
-        border-color: transparent;
+  > div{
+    width: 70%;
+    @media screen and (min-width: 1600px){
+      width: 50%;
     }
-
-    &:focus{
-        outline: none;
-        background-color: var(--main-color);
+    input{
+      height: 5vh;
+    }
+    select{
+      height: 6vh;
+    }
+    > button{
+      background-color: var(--accent-color-1) !important;
+      color: white; 
+      transition: all 0.3s ease-in-out;
+      &:hover{
+          background-color: var(--main-color) !important;
+          border-color: transparent;
+      }
+  
+      &:focus{
+          outline: none;
+          background-color: var(--main-color) !important;
+      }
+    }
+    
+    .form-submit{
+      background-color: red;
     }
   }
 }

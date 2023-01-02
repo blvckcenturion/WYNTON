@@ -5,12 +5,14 @@ import { z } from "zod"
 import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
-import { faFileCirclePlus, faFileImage, faAdd} from '@fortawesome/free-solid-svg-icons'
+import { faFileCirclePlus, faFileImage, faAdd, faSave} from '@fortawesome/free-solid-svg-icons'
+import Modal from '../../utils/modal'
+import { F } from '@tauri-apps/api/path-e12e0e34'
 
 const Products = () => {
-  const [categories, setCategories] = useState([]);
-  const [photo, setPhoto] = useState<string>("");
+  const [categories, setCategories] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState<any>(null);
+  const [showProductForm, setShowProductForm] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
@@ -23,6 +25,61 @@ const Products = () => {
       }
     })()
   }, [])
+
+  const addProduct = async () => {
+    setShowProductForm(true);
+  }
+
+  const handleProductSearch = (e: any) => {
+    setProductSearch(e.target.value);
+  }
+
+  return (
+    <>
+      <div className="add-product-section section">
+        <form className='form-search'>
+              <div>
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
+                  Nombre del producto
+                </label>
+                <input placeholder="Buscar productos"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={handleProductSearch} value={productSearch}/>
+              </div>
+              <div>
+                <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addProduct}>
+                    <FontAwesomeIcon icon={faAdd} />
+                    &nbsp;Agregar producto
+                </button>
+              </div>
+          </form>
+          <div className='table item-table'>
+            <table className='table-auto'>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Descripcion</th>
+                  <th>Categoria</th>
+                  <th>Imagen</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+        
+      </div>
+      <Modal className={"add-product-modal"} title={"Agregar producto"} showModal={showProductForm} setShowModal={setShowProductForm}>
+        <ProductForm categories={categories}/>
+      </Modal>
+    </>
+  )
+}
+
+const ProductForm = ({ categories }: { categories: any[] }) => {
+  
+  const [photo, setPhoto] = useState<string>("");
 
   const Product = z.object({
     name: z.string().trim().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}),
@@ -82,53 +139,10 @@ const Products = () => {
     }
   }
 
-  const addProduct = async () => {
-    console.log('hola')
-  }
-
-  const handleProductSearch = (e: any) => {
-    setProductSearch(e.target.value);
-  }
 
   return (
-    <>
-      <div className="add-product-section section">
-        <form className='form-search'>
-              <div>
-                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
-                  Nombre del producto
-                </label>
-                <input placeholder="Buscar productos"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={handleProductSearch} value={productSearch}/>
-              </div>
-              <div>
-                <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addProduct}>
-                    <FontAwesomeIcon icon={faAdd} />
-                    &nbsp;Agregar producto
-                </button>
-              </div>
-          </form>
-          <div className='table item-table'>
-            <table className='table-auto'>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Precio</th>
-                  <th>Descripcion</th>
-                  <th>Categoria</th>
-                  <th>Imagen</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-
-              </tbody>
-            </table>
-          </div>
-
-        {/* <div>
-          <h2>Agregar un nuevo producto.</h2>
-        </div> */}
-        {/* <form className="px-8 pt-6 pb-8 mb-4" onSubmit={formik.handleSubmit}>
+    <div>
+      <form className="px-8 pt-6 pb-8 mb-4" onSubmit={formik.handleSubmit}>
             <div className="mb-4">
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
                 Nombre del producto
@@ -178,14 +192,14 @@ const Products = () => {
                 )}
               </div>
             </div>
-            <div className="flex items-center justify-between flex-col">
+            <div className="flex items-center justify-between flex-col form-submit">
               <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
-                Agregar
+                <FontAwesomeIcon icon={faSave} />
+                &nbsp;Agregar
               </button>
             </div>
-        </form> */}
-      </div>
-    </>
+        </form>
+    </div>
   )
 }
 
