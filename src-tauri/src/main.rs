@@ -24,6 +24,7 @@ pub struct AppState {
     conn: Mutex<SqliteConnection>
 }
 
+
 fn main() {
 
     let state = AppState {

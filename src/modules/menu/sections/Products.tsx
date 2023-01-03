@@ -5,9 +5,10 @@ import { z } from "zod"
 import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
-import { faFileCirclePlus, faFileImage, faAdd, faSave} from '@fortawesome/free-solid-svg-icons'
+import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/modal'
-import { F } from '@tauri-apps/api/path-e12e0e34'
+import Image from 'next/image'
 
 const Products = () => {
   const [categories, setCategories] = useState<any[]>([]);
@@ -132,11 +133,15 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
       if(res == null) {
         setPhoto("");
       } else {
-        setPhoto(res);
+        setPhoto(convertFileSrc(res));
       }
     } catch ( e: any) {
       toast.error(e.message);  
     }
+  }
+  
+  const deleteImage = () => {
+    setPhoto("");
   }
 
 
@@ -176,19 +181,29 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
                 Imagen del producto
               </label>
-              <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline photo" id="productPhoto" onClick={handleImage}>
+              <div className={`photo ${photo.length > 0 ? "active" : "non-active"}`} id="productPhoto">
                 {photo.length == 0 && (
-                  <>
-                    <FontAwesomeIcon icon={faFileCirclePlus}></FontAwesomeIcon>
+                  <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onClick={handleImage}>
+                    <FontAwesomeIcon icon={faFileCirclePlus}/>
                     <p>Escoger imagen</p>
-                  </>
+                  </div>
                 )}
                 {photo && photo.length > 0 && (
-                  <>
-                    <FontAwesomeIcon icon={faFileImage}></FontAwesomeIcon>
-                    
-                    <p>{photo.toString()?.slice(-100)}</p>
-                  </>
+                  <div>
+                    <div className="shadow appearance-none border rounded w-full text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                      <img src={photo} alt="product" />
+                    </div>
+                    <div>
+                      <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={deleteImage}>
+                        <FontAwesomeIcon icon={faTrash}/>
+                        &nbsp;Eliminar
+                      </button>
+                      <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={handleImage}>
+                        <FontAwesomeIcon icon={faEdit}/>
+                        &nbsp;Editar
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

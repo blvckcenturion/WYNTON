@@ -6,6 +6,7 @@ use crate::schema::product;
 // Makes object of this class json serializable, convert them to json then send them to the user
 use serde::{Serialize};
 
+#[allow(non_snake_case)]
 #[derive(Queryable, Debug, Serialize)]
 pub struct Product {
     pub id: i32,

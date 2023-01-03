@@ -4,6 +4,7 @@ use crate::schema::category;
 // Makes object of this class json serializable, convert them to json then send them to the user
 use serde::{Serialize};
 
+#[allow(non_snake_case)]
 #[derive(Queryable, Serialize, Debug)]
 pub struct Category {
     pub id: i32,
