@@ -13,6 +13,10 @@ extern crate diesel;
 
 use std::{sync::Mutex};
 use diesel::SqliteConnection;
+use std::env;
+use std::path::Path;
+use std::fs;
+
 
 pub mod schema;
 pub mod models;
@@ -21,7 +25,8 @@ pub mod services;
 pub mod commands;
 
 pub struct AppState {
-    conn: Mutex<SqliteConnection>
+    conn: Mutex<SqliteConnection>, 
+    img_path: String,
 }
 
 
@@ -29,8 +34,16 @@ fn main() {
 
     let state = AppState {
         conn: Mutex::new(db::establish_connection()),
+        img_path: env::var("IMAGES_PATH").expect("IMAGES_PATH must be set")
     };
-    
+
+    if Path::new(&state.img_path).is_dir() {
+        println!("Images path exists");
+    } else {
+        println!("Images path does not exist");
+        fs::create_dir_all(&state.img_path).expect("Could not create images path");
+    }
+
     tauri::Builder::default()
         .manage(state)
         .invoke_handler(tauri::generate_handler![

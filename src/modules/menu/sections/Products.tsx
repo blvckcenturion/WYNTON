@@ -9,6 +9,7 @@ import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/modal'
 import Image from 'next/image'
+import { copyFile, BaseDirectory } from '@tauri-apps/api/fs';
 
 const Products = () => {
   const [categories, setCategories] = useState<any[]>([]);
@@ -83,16 +84,16 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
   const [photo, setPhoto] = useState<string>("");
 
   const Product = z.object({
-    name: z.string().trim().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}),
+    name: z.string({
+      required_error: "El nombre del producto es requerido."
+    }).trim().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}),
     price: z.number({
       invalid_type_error: "El precio debe ser un numero valido.",
       required_error: "El precio del producto es requerido."
     }).min(0, {message: "El precio del producto debe ser mayor o igual a 0."}).positive({message: "El precio del producto debe ser mayor o igual a 0."}),
-    description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim(),
-    category_id: z.number({
-      invalid_type_error: "La categoria debe ser un numero valido.",
-      required_error: "La categoria del producto es requerida."
-    }).min(-1, {message: "La categoria del producto es requerida."}),
+    description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim().optional(),
+    category_id: z.string().optional(),
+    image: z.string().optional()
   })
 
   const formik = useFormik({
@@ -100,17 +101,28 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
       name: "",
       price: 0,
       description: "",
-      category_id: -1,
+      category_id: "-1",
     },
     onSubmit: async (values) => {
       try {
+        
         let prod = Product.parse(values); 
         prod.name = prod.name.toLowerCase();
-        prod.description = prod.description.toLowerCase(); 
+        prod.description = prod.description?.toLowerCase(); 
+        
+
+        if(photo !== "") {
+          let res = await copyFile(
+            photo,
+            "C:/wynton/assets/images/perro.png"
+          );
+        }
+        
         // let res : string = await invoke("add_product", formik.values);
         // let product : any = JSON.parse(res);
         // toast.success("Producto agregado exitosamente");
       } catch(e: any) {
+        console.log(e)
         if (typeof e.issues !== "undefined"){
           toast.error(e.issues[0].message);
         } else {

@@ -5,6 +5,9 @@ use crate::AppState;
 
 #[tauri::command]
 pub fn create_product(name : String, description : Option<&str>, price : f32, photo : Option<&str>, category_id : Option<i32>,   state: tauri::State<AppState>) -> String {
+
+    
+
     let conn = &mut state.conn.lock().unwrap();
     let item = ProductNew {
         name: &name,
