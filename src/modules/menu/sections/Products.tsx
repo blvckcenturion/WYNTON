@@ -10,8 +10,12 @@ import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@f
 import Modal from '../../utils/modal'
 import Image from 'next/image'
 import { copyFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { dataDir } from "@tauri-apps/api/path";
+import { exists, createDir } from '@tauri-apps/api/fs'
+
 
 const Products = () => {
+
   const [categories, setCategories] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState<any>(null);
   const [showProductForm, setShowProductForm] = useState<boolean>(false);
@@ -82,6 +86,7 @@ const Products = () => {
 const ProductForm = ({ categories }: { categories: any[] }) => {
   
   const [photo, setPhoto] = useState<string>("");
+  const [photoSrc, setPhotoSrc] = useState<string>("");
 
   const Product = z.object({
     name: z.string({
@@ -109,13 +114,25 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
         let prod = Product.parse(values); 
         prod.name = prod.name.toLowerCase();
         prod.description = prod.description?.toLowerCase(); 
-        
 
-        if(photo !== "") {
+        if(photo !== "" && photoSrc !== "") {
+
+          let ap = await dataDir();
+          console.log(ap)
+
+          let imgdir = await exists('wynton/assets/images', {dir: BaseDirectory.Data});
+          
+          if(!imgdir){
+            await createDir('wynton/assets/images', {dir: BaseDirectory.Data, recursive: true});
+          }
+          let name = `${Math.floor(Date.now() / 1000)}.${photoSrc.split('.').pop()}`;
+
           let res = await copyFile(
-            photo,
-            "C:/wynton/assets/images/perro.png"
+            photoSrc,
+            `wynton/assets/images/${name}`,
+            {dir: BaseDirectory.Data}
           );
+        
         }
         
         // let res : string = await invoke("add_product", formik.values);
@@ -141,11 +158,14 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
           { name: 'Image', extensions: ['jpg', 'png', 'jpeg'] }
         ]
       });
-
+      console.log(res)
+      console.log(convertFileSrc(res));
       if(res == null) {
         setPhoto("");
+        setPhotoSrc("");
       } else {
         setPhoto(convertFileSrc(res));
+        setPhotoSrc(res)
       }
     } catch ( e: any) {
       toast.error(e.message);  
@@ -154,6 +174,7 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
   
   const deleteImage = () => {
     setPhoto("");
+    setPhotoSrc("");
   }
 
 
