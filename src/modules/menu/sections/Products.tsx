@@ -8,11 +8,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/modal'
-import Image from 'next/image'
-import { copyFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { dataDir } from "@tauri-apps/api/path";
-import { exists, createDir } from '@tauri-apps/api/fs'
-
+import createImage from '../../utils/createImage'
 
 const Products = () => {
 
@@ -116,23 +112,7 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
         prod.description = prod.description?.toLowerCase(); 
 
         if(photo !== "" && photoSrc !== "") {
-
-          let ap = await dataDir();
-          console.log(ap)
-
-          let imgdir = await exists('wynton/assets/images', {dir: BaseDirectory.Data});
-          
-          if(!imgdir){
-            await createDir('wynton/assets/images', {dir: BaseDirectory.Data, recursive: true});
-          }
-          let name = `${Math.floor(Date.now() / 1000)}.${photoSrc.split('.').pop()}`;
-
-          let res = await copyFile(
-            photoSrc,
-            `wynton/assets/images/${name}`,
-            {dir: BaseDirectory.Data}
-          );
-        
+          prod.image = await createImage("products", photoSrc);     
         }
         
         // let res : string = await invoke("add_product", formik.values);
