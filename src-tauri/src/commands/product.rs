@@ -4,9 +4,7 @@ use crate::AppState;
 
 
 #[tauri::command]
-pub fn create_product(name : String, description : Option<&str>, price : f32, photo : Option<&str>, category_id : Option<i32>,   state: tauri::State<AppState>) -> String {
-
-    
+pub fn create_product(name : String, description : Option<&str>, price : f32, photo : Option<&str>, category_id : Option<i32>, state: tauri::State<AppState>) -> String {    
 
     let conn = &mut state.conn.lock().unwrap();
     let item = ProductNew {
@@ -16,6 +14,7 @@ pub fn create_product(name : String, description : Option<&str>, price : f32, ph
         photo: photo,
         category_id: category_id,
     };
+
     services::product::create(conn, &item)
 }
 
@@ -33,7 +32,7 @@ pub fn update_product(id : i32, name : String, description : Option<&str>, price
         description: description,
         price: price,
         photo: photo,
-        category_id: category_id,
+        category_id: category_id.as_ref(),
     };
     services::product::update(conn, &item, id)
 }

@@ -22,11 +22,14 @@ pub fn find_by_name(conn: &mut SqliteConnection, name: &str) -> String{
 }
 
 pub fn update(conn: &mut SqliteConnection, item: &ProductUpdate, id: i32){
-    use crate::schema::product::dsl::{product, name, updatedAt};
-
+    use crate::schema::product::dsl::{product, name, updatedAt, description, price, photo, category_id};
     let _ = diesel::update(product.find(id))
         .set((
             name.eq(item.name),
+            description.eq(item.description),
+            price.eq(item.price),
+            photo.eq(item.photo),
+            category_id.eq(item.category_id),
             updatedAt.eq(Utc::now().naive_utc())
         ))
         .execute(conn)

@@ -6,16 +6,8 @@
 #[macro_use]
 extern crate diesel;
 
-// #[macro_use] 
-// extern crate diesel_migrations;
-// use diesel_migrations::{embed_migrations, EmbeddedMigrations};
-// pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations/");
-
 use std::{sync::Mutex};
 use diesel::SqliteConnection;
-use std::env;
-use std::path::Path;
-use std::fs;
 
 
 pub mod schema;
@@ -25,24 +17,15 @@ pub mod services;
 pub mod commands;
 
 pub struct AppState {
-    conn: Mutex<SqliteConnection>, 
-    img_path: String,
+    conn: Mutex<SqliteConnection>
 }
 
 
 fn main() {
 
     let state = AppState {
-        conn: Mutex::new(db::establish_connection()),
-        img_path: env::var("IMAGES_PATH").expect("IMAGES_PATH must be set")
+        conn: Mutex::new(db::establish_connection())
     };
-
-    if Path::new(&state.img_path).is_dir() {
-        println!("Images path exists");
-    } else {
-        println!("Images path does not exist");
-        fs::create_dir_all(&state.img_path).expect("Could not create images path");
-    }
 
     tauri::Builder::default()
         .manage(state)

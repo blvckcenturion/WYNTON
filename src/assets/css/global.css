@@ -236,15 +236,16 @@ body{
 }
 
 input, select{
-    border: 1px solid transparent;
-    transition: all 0.3s ease-in-out;
-    &:focus{
-        outline: none;
-        border: 1px solid var(--main-color);
-    }
-    &:hover{
-        @apply shadow-lg;
-    }
+  background-color: var(--bg-accent);
+  border: 1px solid transparent;
+  transition: all 0.3s ease-in-out;
+  &:focus{
+      outline: none;
+      border: 1px solid var(--main-color);
+  }
+  &:hover{
+      @apply shadow-lg;
+  }
 }
 
 form{
@@ -310,6 +311,7 @@ div.item-table {
         text-align: center;
         color: var(--accent-color-1);
         font-size: 2rem;
+        line-height: 40px;
     }
   }
 
@@ -360,10 +362,10 @@ div.item-table {
         }
       }
       button {
-          width: 90%;
+          margin:10px;
           transition: all 0.5s ease-in-out;
           &:nth-child(1){
-            @apply m-3;
+            
             border: 1px solid var(--main-color);
             color: var(--main-color);
             
@@ -373,7 +375,6 @@ div.item-table {
             }
           }
           &:nth-child(2){
-              @apply m-3;
               border: 1px solid red;
               color: red;
               &:hover{

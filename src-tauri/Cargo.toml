@@ -25,6 +25,8 @@ chrono = {version = "0.4.23", features = ["serde"] }
 libsqlite3-sys = { version = "0.25.2", features = ["bundled"] }
 rusqlite = "0.28.0"
 serde_derive = "1.0.151"
+tokio = "1.24.1"
+reqwest = "0.11.13"
 
 
 

@@ -1,11 +1,19 @@
 import { useEffect } from "react";
 
-const Modal = ({className, showModal, setShowModal, children, title} : {className : string | null, showModal : boolean,setShowModal : Function, children : any, title : string}) => {
+const Modal = ({className, showModal, onClose, children, title} : {className : string | null, showModal : boolean, onClose : Function, children : any, title : string}) => {
+
+    useEffect(() => {
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape"){
+                onClose();
+            }
+        });
+    }, [])
 
     const closeModal = (e : any) => {
         const modal = document.getElementById("modal");
         if (e.target === modal){
-            setShowModal(false);
+            onClose();
         }
     }
 

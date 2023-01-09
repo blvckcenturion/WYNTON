@@ -21,7 +21,7 @@ const createImage = async (dirname : string, photoSrc : string) => {
         await copyFile(photoSrc, `wynton/assets/images/${dirname}/${name}`, { dir: BaseDirectory.Data})
     }
 
-    return `${ap}/wynton/assets/images/${dirname}/${name}`
+    return `${ap}wynton/assets/images/${dirname}/${name}`
 }
 
 export default createImage

@@ -6,15 +6,24 @@ import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
+import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit, faDeleteLeft} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/modal'
 import createImage from '../../utils/createImage'
+import { BaseDirectory, exists } from '@tauri-apps/api/fs'
+import capitalize from '../../utils/capitalize'
+import { E } from '@tauri-apps/api/path-e12e0e34'
+
 
 const Products = () => {
 
   const [categories, setCategories] = useState<any[]>([]);
-  const [productSearch, setProductSearch] = useState<any>(null);
+  const [productSearch, setProductSearch] = useState<any[] | null>(null);
+  const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [showProductForm, setShowProductForm] = useState<boolean>(false);
+  const [showProductDelete, setShowProductDelete] = useState<boolean>(false);
+  const [productDelete, setProductDelete] = useState<number | null>(null);
+  const [productEdit, setProductEdit] = useState<object | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -22,6 +31,7 @@ const Products = () => {
         let res : string = await invoke("get_all_category");
         let cat : any = JSON.parse(res);
         setCategories(cat);
+        await loadProducts();
       } catch(e: any) {
         toast.error(e.message);
       }
@@ -33,8 +43,86 @@ const Products = () => {
   }
 
   const handleProductSearch = (e: any) => {
-    setProductSearch(e.target.value);
+    if(e.target.value.trim()){
+      let prods = products.filter((product : any) => {
+        if(product.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || product.name.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())){
+          return product;
+        }
+      })
+      setProductSearch(prods);
+    } else {
+      setProductSearch(null);
+    }
+    setProductSearchTerm(e.target.value.trim());
   }
+
+  const loadProducts = async () => {
+    try{
+        let prod : string = await invoke("get_all_product")
+        let products : any = await JSON.parse(prod);
+
+        products = await products.map( async (product : any) => {
+
+        return {
+          ...product,
+          category: categories.filter(e => {
+            return e.id == product.category_id
+          })[0],
+          photo: product.photo ? await exists(product.photo) ?  convertFileSrc(product.photo) : null : null,
+        }
+      })
+      setProducts(await Promise.all(products))
+    } catch(e: any){
+      toast.error(e.message)
+    }
+  }
+
+  const editProduct = (id : any) => {
+    setProductEdit(id);
+    setShowProductForm(true);
+  }
+
+  const deleteProduct = (id : number) => {
+    setShowProductDelete(true);
+    setProductDelete(id);
+  }
+
+
+  const showProducts = (products : any[]) => {
+    return products.map((product : any) => {
+      return (
+        <tr key={product.id}>
+          <td>{capitalize(product.name)}</td>
+          <td>{product.price}</td>
+          <td>{product.description ? capitalize(product.description) : "N/A"}</td>
+          <td>{product.category?.name ? capitalize(product.category.name) : "N/A"}</td>
+          <td>
+            <div>
+              {product.photo && (
+                <img src={product.photo} alt={product.name} />
+              )}
+              {!product.photo && (
+                <>
+                  <FontAwesomeIcon icon={faFileImage} />
+                  <br />
+                  Sin imagen.
+                </>
+              )}
+            </div>
+          </td>
+          <td>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => editProduct(product)}>
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => deleteProduct(product.id)}>
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </td>
+        </tr>
+      )
+    })
+  }
+
 
   return (
     <>
@@ -44,7 +132,7 @@ const Products = () => {
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
                   Nombre del producto
                 </label>
-                <input placeholder="Buscar productos"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={handleProductSearch} value={productSearch}/>
+                <input placeholder="Buscar productos"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={handleProductSearch} value={productSearchTerm}/>
               </div>
               <div>
                 <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addProduct}>
@@ -54,35 +142,92 @@ const Products = () => {
               </div>
           </form>
           <div className='table item-table'>
-            <table className='table-auto'>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Precio</th>
-                  <th>Descripcion</th>
-                  <th>Categoria</th>
-                  <th>Imagen</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
+            {products.length == 0 && productSearch == null && (
+              <div className="text-center">
+                <p>No hay productos registrados.</p>
+              </div>
+            )}
 
-              </tbody>
+            {productSearch != null && productSearch.length == 0 && (
+              <div>
+                <p>No se encontraron productos con el nombre "{productSearchTerm}"</p>
+              </div>
+            )}
+            {(products != null || productSearch != null) && (products?.length > 0 && productSearch == null|| productSearch != null && productSearch?.length > 0) && (
+              <table className='table-auto'>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Descripcion</th>
+                    <th>Categoria</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products != null && productSearch == null && showProducts(products)}
+                  {productSearch != null && showProducts(productSearch)}
+                </tbody>
             </table>
+            )}
           </div>
         
       </div>
-      <Modal className={"add-product-modal"} title={"Agregar producto"} showModal={showProductForm} setShowModal={setShowProductForm}>
-        <ProductForm categories={categories}/>
+      <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
+        <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} />
+      </Modal>
+      <Modal className={"delete-product-modal"} title={"Eliminar producto"} showModal={showProductDelete} onClose={() => setShowProductDelete(false)}>
+        <ProductDelete loadProducts={loadProducts} productId={productDelete} setShowProductDelete={setShowProductDelete}/>
       </Modal>
     </>
   )
 }
 
-const ProductForm = ({ categories }: { categories: any[] }) => {
+const ProductDelete = ({setShowProductDelete, productId, loadProducts} : {setShowProductDelete : Function, productId : number | null, loadProducts : Function}) => {
+
+  const onCancel = () => {
+    setShowProductDelete(false)
+  }
+
+  const onConfirm = () => {
+    (async () => {
+      try{
+        await invoke("delete_product", {id: productId})
+        loadProducts()
+        setShowProductDelete(false)
+        toast.success("Producto eliminado correctamente")
+      } catch(e: any){
+        toast.error(e.message)
+      }
+    })()
+  }
+
+  return (
+    <>
+      <div className='modal-body'>
+        <p>¿Estas seguro que deseas eliminar este producto?</p>
+      </div>
+      <div className='modal-footer'>
+          <button className='btn btn-cancel' onClick={onCancel}>Cancelar</button>
+          <button className='btn btn-confirm' onClick={onConfirm}>Eliminar</button>
+      </div>
+    </>
+  )
+}
+
+const ProductForm = ({ categories, setShowProductForm, loadProducts, product, products}: { categories: any[], setShowProductForm : Function, loadProducts : Function, product : any | null, products: any[]}) => {
   
   const [photo, setPhoto] = useState<string>("");
   const [photoSrc, setPhotoSrc] = useState<string>("");
+  const [photoReplaced, setPhotoReplaced] = useState<boolean>(false);
+
+  useEffect(() => {
+    if(product && product.photo) {
+      setPhoto(product.photo)
+      setPhotoSrc(product.photo)
+    }
+  }, [])
 
   const Product = z.object({
     name: z.string({
@@ -93,31 +238,85 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
       required_error: "El precio del producto es requerido."
     }).min(0, {message: "El precio del producto debe ser mayor o igual a 0."}).positive({message: "El precio del producto debe ser mayor o igual a 0."}),
     description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim().optional(),
-    category_id: z.string().optional(),
-    image: z.string().optional()
+    categoryId: z.number().optional(),
+    photo: z.string().optional()
   })
 
-  const formik = useFormik({
+  const editProduct = useFormik({
+    initialValues: {
+      name: product?.name || "",
+      price: product?.price || 0,
+      description: product?.description || "",
+      categoryId: product?.category_id || -1,
+    }, 
+    onSubmit: async (values) => {
+      try {
+        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)});
+        prod.name = prod.name.toLowerCase();
+        prod.description = prod.description?.toLowerCase();
+        prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
+
+        let filtered = products.filter((el : any) => {if (el.name.trim().toLowerCase() == prod.name.trim().toLowerCase() && el.id !== product.id) return el} );
+
+        if (filtered.length > 0 && product.id !== filtered[0].id) {
+          throw new Error("Ya existe un producto con ese nombre.");
+        }
+
+        if (photoReplaced && photo != "" && photoSrc != "") {
+          prod.photo = await createImage("products", photoSrc);
+        }
+
+        let res : any = await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: prod.photo});
+
+        loadProducts();
+        setShowProductForm(false);
+        toast.success("Producto actualizado con exito.");
+
+      } catch (e: any) {
+        console.log(e)
+        if (typeof e.issues !== "undefined"){
+          toast.error(e.issues[0].message);
+        } else {
+          toast.error(e.message);
+        }
+      }
+    }
+  })
+
+  const addProduct = useFormik({
     initialValues: {
       name: "",
       price: 0,
       description: "",
-      category_id: "-1",
+      categoryId: "-1",
     },
     onSubmit: async (values) => {
       try {
-        
-        let prod = Product.parse(values); 
+        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)}); 
         prod.name = prod.name.toLowerCase();
-        prod.description = prod.description?.toLowerCase(); 
+        prod.description = prod.description?.toLowerCase();
+        prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
+      
+        await invoke("find_by_name_product", {name: prod.name}).then((res : any) => {
+          res = JSON.parse(res)
+          if (res.length > 0) {
+            throw new Error("Ya existe un producto con ese nombre.")
+          }
+        })
 
         if(photo !== "" && photoSrc !== "") {
-          prod.image = await createImage("products", photoSrc);     
+          prod.photo = await createImage("products", photoSrc);     
         }
+        let res : string = await invoke("create_product", prod);
         
-        // let res : string = await invoke("add_product", formik.values);
-        // let product : any = JSON.parse(res);
-        // toast.success("Producto agregado exitosamente");
+        let product : any = JSON.parse(res);
+        if (product){
+          toast.success("Producto agregado exitosamente");
+          loadProducts();
+          setShowProductForm(false);
+        } else {
+          toast.error("No se pudo agregar el producto");
+        }
       } catch(e: any) {
         console.log(e)
         if (typeof e.issues !== "undefined"){
@@ -147,6 +346,11 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
         setPhoto(convertFileSrc(res));
         setPhotoSrc(res)
       }
+
+      if(product) {
+        setPhotoReplaced(true);
+      }
+
     } catch ( e: any) {
       toast.error(e.message);  
     }
@@ -160,30 +364,30 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
 
   return (
     <div>
-      <form className="px-8 pt-6 pb-8 mb-4" onSubmit={formik.handleSubmit}>
+      <form className="px-8 pt-6 pb-8 mb-4" onSubmit={product !== null ? editProduct.handleSubmit : addProduct.handleSubmit}>
             <div className="mb-4">
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
                 Nombre del producto
               </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={formik.handleChange("name")} value={formik.values.name}/>
+              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={product ? editProduct.handleChange("name") :addProduct.handleChange("name")} value={product ? editProduct.values.name :addProduct.values.name}/>
             </div>
             <div className="mb-4">
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productPrice">
                 Precio del producto
               </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={formik.handleChange("price")} value={formik.values.price}/>
+              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={product ? editProduct.handleChange("price") :addProduct.handleChange("price")} value={product ? editProduct.values.price :addProduct.values.price}/>
             </div>
             <div className="mb-4">
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
                 Descripcion del producto
               </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" onChange={formik.handleChange("description")} value={formik.values.description}/>
+              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" onChange={product ? editProduct.handleChange("description") :addProduct.handleChange("description")} value={product ? editProduct.values.description :addProduct.values.description}/>
             </div>
             <div className="mb-4">
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productCategory">
                 Categoria del producto
               </label>
-              <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategory" onChange={formik.handleChange("category_id")} value={formik.values.category_id}>
+              <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategory" onChange={product ? editProduct.handleChange("categoryId") :addProduct.handleChange("categoryId")} value={product ? editProduct.values.categoryId :addProduct.values.categoryId}>
                 <option value="-1">Sin categoria</option>
                 {categories.map((category: any) => {
                   return <option key={category.id} value={category.id}>{category.name}</option>
@@ -223,7 +427,7 @@ const ProductForm = ({ categories }: { categories: any[] }) => {
             <div className="flex items-center justify-between flex-col form-submit">
               <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
                 <FontAwesomeIcon icon={faSave} />
-                &nbsp;Agregar
+                &nbsp;{product ? "Guardar" : "Agregar"}
               </button>
             </div>
         </form>

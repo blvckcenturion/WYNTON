@@ -40,9 +40,18 @@
           "**",
           "$HOME/*",
           "$APPDATA/*",
+          "$APPDATA/wynton/assets/images/*",
+          "$APP/databases/*",
+          "$APPDATA/wynton/assets/images/products/*",
           "$HOME/Library/*",
-          "$DATA/*"
+          "$DATA/*",
+          "$DATA/wynton/assets/images/products/*"
         ]
+      },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": ["**", "$HOME/*", "$APPDATA/*", "$APPDATA/wynton/assets/images/*", "$APP/databases/*", "$APPDATA/wynton/assets/images/products/*", "$HOME/Library/*", "$DATA/*", "$DATA/wynton/assets/images/products/*"]
       }
     },
     "bundle": {

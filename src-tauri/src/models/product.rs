@@ -37,6 +37,6 @@ pub struct ProductUpdate<'a> {
     pub description: Option<&'a str>,
     pub price: f32,
     pub photo: Option<&'a str>,
-    pub category_id: Option<i32>,
+    pub category_id: Option<&'a i32>,
 }
 

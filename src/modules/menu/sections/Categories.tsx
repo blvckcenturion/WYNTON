@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useFormik } from 'formik';
 import {toast} from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAdd, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faAdd, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const Categories = () => {
 
@@ -12,6 +12,7 @@ const Categories = () => {
   const [category, setCategory] = useState<string>("");
   const [categoryEdit, setCategoryEdit] = useState<any>(null);
   const [categorySearch, setCategorySearch] = useState<any[] | null>(null);
+  const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
   const [showCategoryForm, setShowCategoryForm] = useState<boolean>(false);
   const [categoryDelete, setCategoryDelete] = useState<any | null>(null);
 
@@ -50,21 +51,17 @@ const Categories = () => {
   }
 
   const handleCategory = (e : any) => {
-    console.log(e.target.value)
     if(e.target.value.trim()){
       let cat = categories.filter((el : any) => {
         if (el.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || el.name.trim().includes(e.target.value.trim().toLowerCase())){
-          console.log(el.name.toLowerCase() + " = " + e.target.value.toLowerCase())
           return el;
         } 
       })
-      console.log(cat)
       setCategorySearch(cat);
-      setCategory(e.target.value);
     } else {
-      setCategory(e.target.value);
       setCategorySearch(null)
     }
+    setCategorySearchTerm(e.target.value.trim())
   }
 
   const showCategories = (categories : any[]) => {
@@ -72,13 +69,13 @@ const Categories = () => {
       return (
         <tr key={category.id}>
           <td>{category.name}</td>
-          <td>{category.updated_at == null ? new Date(category.created_at).toLocaleString() : new Date(category.updated_at).toLocaleString()}</td>
+
           <td>
             <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => editCategory(category)}>
-              Editar
+              <FontAwesomeIcon icon={faEdit} />
             </button>
             <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => setCategoryDelete(category.id)}>
-              Eliminar
+              <FontAwesomeIcon icon={faTrash} />
             </button>
           </td>
         </tr>
@@ -104,7 +101,7 @@ const Categories = () => {
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="categoryName">
                 Nombre de la categoria
               </label>
-              <input placeholder="Buscar categorias"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategory} value={category}/>
+              <input placeholder="Buscar categorias"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategory} value={categorySearchTerm}/>
             </div>
             <div>
               <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addCategory}>
@@ -121,7 +118,7 @@ const Categories = () => {
           )}
           {categorySearch != null && categorySearch.length == 0 && (
             <div>
-              <p>No hay resultados para la busqueda.</p>
+              <p>No se encontraron categorias con el nombre "{categorySearchTerm}"</p>
             </div>
           )}
           {(categories != null || categorySearch != null) && (categories?.length > 0 && categorySearch == null || categorySearch != null && categorySearch?.length > 0) && (
@@ -129,7 +126,6 @@ const Categories = () => {
               <thead>
                 <tr>
                   <th>Nombre</th>
-                  <th>Ultima actualizacion</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
