@@ -6,16 +6,18 @@ import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit, faDeleteLeft} from '@fortawesome/free-solid-svg-icons'
-import Modal from '../../utils/modal'
-import createImage from '../../utils/createImage'
-import { BaseDirectory, exists } from '@tauri-apps/api/fs'
-import capitalize from '../../utils/capitalize'
-import { E } from '@tauri-apps/api/path-e12e0e34'
+import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
+import Modal from '../../utils/components/modal'
+import createImage from '../../utils/functions/createImage'
+import { exists } from '@tauri-apps/api/fs'
+import capitalize from '../../utils/functions/capitalize'
+import elementSearch from '../../utils/functions/elementSearch'
+import ActionModal from '../../utils/components/actionModal'
 
-
+// Main component for the products section 
 const Products = () => {
 
+  // Products Section State Variables
   const [categories, setCategories] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState<any[] | null>(null);
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
@@ -25,6 +27,7 @@ const Products = () => {
   const [productEdit, setProductEdit] = useState<object | null>(null);
   const [products, setProducts] = useState<any[]>([]);
 
+  // Products Section On Mount Function
   useEffect(() => {
     (async () => {
       try {
@@ -37,25 +40,8 @@ const Products = () => {
       }
     })()
   }, [])
-
-  const addProduct = async () => {
-    setShowProductForm(true);
-  }
-
-  const handleProductSearch = (e: any) => {
-    if(e.target.value.trim()){
-      let prods = products.filter((product : any) => {
-        if(product.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || product.name.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())){
-          return product;
-        }
-      })
-      setProductSearch(prods);
-    } else {
-      setProductSearch(null);
-    }
-    setProductSearchTerm(e.target.value.trim());
-  }
-
+  
+  // Helper function to Load all the active products from the backend
   const loadProducts = async () => {
     try{
         let prod : string = await invoke("get_all_product")
@@ -77,17 +63,17 @@ const Products = () => {
     }
   }
 
-  const editProduct = (id : any) => {
-    setProductEdit(id);
-    setShowProductForm(true);
+  // Helper function to search for products using a specific term
+  const handleProductSearch = (e: any) => {
+    const productFilter = (product: any) => {
+      if(product.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || product.name.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())){
+        return product;
+      }
+    }
+    elementSearch(e, setProductSearchTerm, setProductSearch, products, productFilter)
   }
 
-  const deleteProduct = (id : number) => {
-    setShowProductDelete(true);
-    setProductDelete(id);
-  }
-
-
+  // Helper function that renders the products on the table
   const showProducts = (products : any[]) => {
     return products.map((product : any) => {
       return (
@@ -111,10 +97,10 @@ const Products = () => {
             </div>
           </td>
           <td>
-            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => editProduct(product)}>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => {setProductEdit(product); setShowProductForm(true)}}>
               <FontAwesomeIcon icon={faEdit} />
             </button>
-            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => deleteProduct(product.id)}>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => {setShowProductDelete(true); setProductDelete(product.id);}}>
               <FontAwesomeIcon icon={faTrash} />
             </button>
           </td>
@@ -123,6 +109,17 @@ const Products = () => {
     })
   }
 
+  // Invoker function to set a product's status as deleted
+  const deleteProduct = async () => {
+    try{
+      await invoke("delete_product", {id: productDelete})
+      loadProducts()
+      setShowProductDelete(false)
+      toast.success("Producto eliminado correctamente")
+    } catch(e: any){
+      toast.error(e.message)
+    }
+  }
 
   return (
     <>
@@ -135,7 +132,7 @@ const Products = () => {
                 <input placeholder="Buscar productos"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={handleProductSearch} value={productSearchTerm}/>
               </div>
               <div>
-                <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addProduct}>
+                <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ () => setShowProductForm(true)}>
                     <FontAwesomeIcon icon={faAdd} />
                     &nbsp;Agregar producto
                 </button>
@@ -177,51 +174,20 @@ const Products = () => {
       <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
         <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} />
       </Modal>
-      <Modal className={"delete-product-modal"} title={"Eliminar producto"} showModal={showProductDelete} onClose={() => setShowProductDelete(false)}>
-        <ProductDelete loadProducts={loadProducts} productId={productDelete} setShowProductDelete={setShowProductDelete}/>
-      </Modal>
+      <ActionModal title="Eliminar producto" body="¿Esta seguro que deseas eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
     </>
   )
 }
 
-const ProductDelete = ({setShowProductDelete, productId, loadProducts} : {setShowProductDelete : Function, productId : number | null, loadProducts : Function}) => {
-
-  const onCancel = () => {
-    setShowProductDelete(false)
-  }
-
-  const onConfirm = () => {
-    (async () => {
-      try{
-        await invoke("delete_product", {id: productId})
-        loadProducts()
-        setShowProductDelete(false)
-        toast.success("Producto eliminado correctamente")
-      } catch(e: any){
-        toast.error(e.message)
-      }
-    })()
-  }
-
-  return (
-    <>
-      <div className='modal-body'>
-        <p>¿Estas seguro que deseas eliminar este producto?</p>
-      </div>
-      <div className='modal-footer'>
-          <button className='btn btn-cancel' onClick={onCancel}>Cancelar</button>
-          <button className='btn btn-confirm' onClick={onConfirm}>Eliminar</button>
-      </div>
-    </>
-  )
-}
-
+// Component in charge of creating and editing products.
 const ProductForm = ({ categories, setShowProductForm, loadProducts, product, products}: { categories: any[], setShowProductForm : Function, loadProducts : Function, product : any | null, products: any[]}) => {
   
+  // Product Form State Variables
   const [photo, setPhoto] = useState<string>("");
   const [photoSrc, setPhotoSrc] = useState<string>("");
   const [photoReplaced, setPhotoReplaced] = useState<boolean>(false);
 
+  // Product Form On Mount Function
   useEffect(() => {
     if(product && product.photo) {
       setPhoto(product.photo)
@@ -229,6 +195,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     }
   }, [])
 
+  // Product Validation Schema
   const Product = z.object({
     name: z.string({
       required_error: "El nombre del producto es requerido."
@@ -242,47 +209,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     photo: z.string().optional()
   })
 
-  const editProduct = useFormik({
-    initialValues: {
-      name: product?.name || "",
-      price: product?.price || 0,
-      description: product?.description || "",
-      categoryId: product?.category_id || -1,
-    }, 
-    onSubmit: async (values) => {
-      try {
-        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)});
-        prod.name = prod.name.toLowerCase();
-        prod.description = prod.description?.toLowerCase();
-        prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
-
-        let filtered = products.filter((el : any) => {if (el.name.trim().toLowerCase() == prod.name.trim().toLowerCase() && el.id !== product.id) return el} );
-
-        if (filtered.length > 0 && product.id !== filtered[0].id) {
-          throw new Error("Ya existe un producto con ese nombre.");
-        }
-
-        if (photoReplaced && photo != "" && photoSrc != "") {
-          prod.photo = await createImage("products", photoSrc);
-        }
-
-        let res : any = await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: prod.photo});
-
-        loadProducts();
-        setShowProductForm(false);
-        toast.success("Producto actualizado con exito.");
-
-      } catch (e: any) {
-        console.log(e)
-        if (typeof e.issues !== "undefined"){
-          toast.error(e.issues[0].message);
-        } else {
-          toast.error(e.message);
-        }
-      }
-    }
-  })
-
+  // Create New Product Form Configuration
   const addProduct = useFormik({
     initialValues: {
       name: "",
@@ -328,6 +255,49 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     }
   })
 
+  // Edit Product Form Configuration
+  const editProduct = useFormik({
+    initialValues: {
+      name: product?.name || "",
+      price: product?.price || 0,
+      description: product?.description || "",
+      categoryId: product?.category_id || -1,
+    }, 
+    onSubmit: async (values) => {
+      try {
+        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)});
+        prod.name = prod.name.toLowerCase();
+        prod.description = prod.description?.toLowerCase();
+        prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
+
+        let filtered = products.filter((el : any) => {if (el.name.trim().toLowerCase() == prod.name.trim().toLowerCase() && el.id !== product.id) return el} );
+
+        if (filtered.length > 0 && product.id !== filtered[0].id) {
+          throw new Error("Ya existe un producto con ese nombre.");
+        }
+
+        if (photoReplaced && photo != "" && photoSrc != "") {
+          prod.photo = await createImage("products", photoSrc);
+        }
+
+        await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: prod.photo});
+
+        loadProducts();
+        setShowProductForm(false);
+        toast.success("Producto actualizado con exito.");
+
+      } catch (e: any) {
+        console.log(e)
+        if (typeof e.issues !== "undefined"){
+          toast.error(e.issues[0].message);
+        } else {
+          toast.error(e.message);
+        }
+      }
+    }
+  })  
+
+  // Helper function that allows to upload pictures to later be saved
   const handleImage = async () => {
     try {
       let res : any = await open({

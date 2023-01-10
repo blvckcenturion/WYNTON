@@ -5,9 +5,14 @@ import { useFormik } from 'formik';
 import {toast} from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
+import elementSearch from '../../utils/functions/elementSearch';
+import Modal from '../../utils/components/modal';
+import ActionModal from '../../utils/components/actionModal';
 
+// Main component for the categories section
 const Categories = () => {
 
+  // Categories Section State Variables
   const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState<string>("");
   const [categoryEdit, setCategoryEdit] = useState<any>(null);
@@ -15,66 +20,47 @@ const Categories = () => {
   const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
   const [showCategoryForm, setShowCategoryForm] = useState<boolean>(false);
   const [categoryDelete, setCategoryDelete] = useState<any | null>(null);
+  const [showCategoryDelete, setShowCategoryDelete] = useState<boolean>(false);  
 
+  // Categories Section On Mount Function
   useEffect(() => {
     (async () => {
-      await getCategories();
+      await loadCategories();
     })()
   }, [])
-
-  const getCategories = async () => {
+  
+  // Helper function to Load all the active categories from the backend
+  const loadCategories = async () => {
     try {
       let res : string = await invoke("get_all_category");
       let cat : any = JSON.parse(res);
       setCategories(cat);
-      console.log(cat);
     } catch(e: any) {
       toast.error(e.message);
     }
   }
 
-  const deleteCategory = async () => {
-    
-    try {
-      await invoke("delete_category", {id: categoryDelete}).then((res) => {
-        toast.success("Categoria eliminada correctamente.");
-      });
-      await getCategories();
-      setCategoryDelete(null);
-    } catch(e: any) {
-      toast.error(e.message);
+  // Helper function to search for categories using a specific term
+  const handleCategorySearch = (e : any) => {
+    const categoryFilter = (category : any) => {
+      if(category.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || category.name.trim().includes(e.target.value.trim().toLowerCase())){
+        return category;
+      }
     }
+    elementSearch(e, setCategorySearchTerm, setCategorySearch, categories, categoryFilter);
   }
 
-  const cancelDeleteCategory = () => {
-    setCategoryDelete(null);
-  }
-
-  const handleCategory = (e : any) => {
-    if(e.target.value.trim()){
-      let cat = categories.filter((el : any) => {
-        if (el.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || el.name.trim().includes(e.target.value.trim().toLowerCase())){
-          return el;
-        } 
-      })
-      setCategorySearch(cat);
-    } else {
-      setCategorySearch(null)
-    }
-    setCategorySearchTerm(e.target.value.trim())
-  }
-
+  // Helper function that renders the categories on the table
   const showCategories = (categories : any[]) => {
     return categories.map((category : any) => {
       return (
         <tr key={category.id}>
           <td>{category.name}</td>
-
           <td>
-            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => editCategory(category)}>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => {setShowCategoryForm(true); setCategoryEdit(category)}}>
               <FontAwesomeIcon icon={faEdit} />
             </button>
-            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => setCategoryDelete(category.id)}>
+            <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => {setShowCategoryDelete(true); setCategoryDelete(category.id)}}>
               <FontAwesomeIcon icon={faTrash} />
             </button>
           </td>
@@ -83,14 +69,18 @@ const Categories = () => {
     })
   }
 
-  const addCategory = () => {
-    setShowCategoryForm(true);
-    setCategoryEdit(null);
-  }
-
-  const editCategory = (c : object) => {
-    setShowCategoryForm(true);
-    setCategoryEdit(c);
+  // Invoker function to set a category's status as deleted
+  const deleteCategory = async () => {
+    try {
+      await invoke("delete_category", {id: categoryDelete}).then((res) => {
+        toast.success("Categoria eliminada correctamente.");
+      });
+      await loadCategories();
+      setCategoryDelete(null);
+      setShowCategoryDelete(false);
+    } catch(e: any) {
+      toast.error(e.message);
+    }
   }
 
   return (
@@ -101,10 +91,10 @@ const Categories = () => {
               <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="categoryName">
                 Nombre de la categoria
               </label>
-              <input placeholder="Buscar categorias"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategory} value={categorySearchTerm}/>
+              <input placeholder="Buscar categorias"className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="categoryName" type="text" onChange={handleCategorySearch} value={categorySearchTerm}/>
             </div>
             <div>
-              <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={ addCategory}>
+              <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => setShowCategoryForm(true)}>
                   <FontAwesomeIcon icon={faAdd} />
                   &nbsp;Agregar categoria
               </button>
@@ -137,72 +127,28 @@ const Categories = () => {
           )}
         </div>
     </div>
-    {showCategoryForm && <CategoryForm setShowCategoryForm={setShowCategoryForm} getCategories={getCategories} category={categoryEdit} categories={categories}/>}
-    {categoryDelete != null && <CategoryDelete title={"Eliminar categoria"} body={"¿Estas seguro de eliminar esta categoria?"} onConfirm={deleteCategory} onCancel={cancelDeleteCategory}/>}
+    <Modal className={"add-category-modal"} title={categoryEdit ? "Editar categoria" : "Agregar categoria"} showModal={showCategoryForm} onClose={() => {setShowCategoryForm(false); setCategoryEdit(null)}}>
+      <CategoryForm setShowCategoryForm={setShowCategoryForm} loadCategories={loadCategories} category={categoryEdit} categories={categories}/>
+    </Modal>
+    <ActionModal title="Eliminar categoria" body="¿Estas seguro que deseas eliminar esta categoria?" showModal={showCategoryDelete} onConfirm={deleteCategory} onCancel={() => setShowCategoryDelete(false)}/>
     </>
   )
 }
 
+// Component in charge of creating and editing categories.
+const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories} : {setShowCategoryForm : Function, loadCategories : Function, category : any, categories : any[]}) => {
 
-const CategoryDelete = ({title, body, onConfirm, onCancel} : {title: string, body : string, onConfirm : any, onCancel : any}) => {
-  const bgClose = (e : any) => {
-    const modal = document.getElementById("modal-wrapper");
-    if (e.target === modal){
-      onCancel();
-    }
-  }
+  // Category State Variables
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [categorySave, setCategorySave] = useState(null);
 
-  return (
-    <div className='modal' id='modal-wrapper' onClick={bgClose}>
-      <div className='modal-content'>
-        <div className='modal-header'>
-          <h1>{title}</h1>
-        </div>
-        <div className='modal-body'>
-          <p>{body}</p>
-        </div>
-        <div className='modal-footer'>
-          <button className='btn btn-cancel' onClick={onCancel}>Cancelar</button>
-          <button className='btn btn-confirm' onClick={onConfirm}>Eliminar</button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const CategoryForm = ({setShowCategoryForm, getCategories, category, categories} : {setShowCategoryForm : Function, getCategories : Function, category : any, categories : any[]}) => {
-
+  // Category Validation Schema
   const Category = z.object({
     name: z.string().trim()
     .max(20, {message: "El nombre de la categoria debe ser menor o igual a 20 caracteres."}).min(1, {message: "El nombre de la categoria es requerido."}),
   })
-
-  const editCategory = useFormik({
-    initialValues: {
-      name: category != null ? category.name : '',
-    },
-    onSubmit: async (values) => {
-      let cat = Category.parse(values);
-      cat.name = cat.name.toLowerCase();
-      try {
-        let filtered = categories.filter((el : any) => { if (el.name.trim().toLowerCase() === cat.name.trim().toLowerCase() && el.id !== category.id) return el; });
-        if (filtered.length > 0 && category.id !== filtered[0].id) {
-          throw new Error("Ya existe una categoria con ese nombre.");
-        }
-        await invoke("update_category", {id: category.id, name: cat.name});
-        toast.success("Categoria actualizada con exito.");
-        await getCategories();
-        setShowCategoryForm(false);
-      } catch(e: any) {
-        if (typeof e.issues !== "undefined"){
-          toast.error(e.issues[0].message);
-        } else {
-          toast.error(e.message);
-        }
-      }
-    }
-  })
-
+  
+  // Create New Category Form Configuration
   const createCategory = useFormik({
     initialValues: {
       name: '',
@@ -219,9 +165,8 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
         });
         await invoke("create_category", cat).then((res) => {
           toast.success("Categoria agregada correctamente.");
-          createCategory.resetForm();
         });
-        await getCategories();
+        await loadCategories();
         setShowCategoryForm(false);
       } catch(e: any ) {
         if (typeof e.issues !== "undefined"){
@@ -233,18 +178,48 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
     }
   })
 
-  const bgClose = (e : any) => {
-    const modal = document.getElementById("add-category-modal");
-    if (e.target === modal){
-      setShowCategoryForm(false);
+  // Edit Category Form Configuration
+  const editCategory = useFormik({
+    initialValues: {
+      name: category != null ? category.name : '',
+    },
+    onSubmit: async (values) => {
+      let cat = Category.parse(values);
+      cat.name = cat.name.toLowerCase();
+      try {
+        let filtered = categories.filter((el : any) => { if (el.name.trim().toLowerCase() === cat.name.trim().toLowerCase() && el.id !== category.id) return el; });
+        if (filtered.length > 0 && category.id !== filtered[0].id) {
+          throw new Error("Ya existe una categoria con ese nombre.");
+        }
+        if (cat.name !== category.name) {
+          setShowConfirm(true)
+          setCategorySave(cat)
+        } else {
+          setShowConfirm(false);
+          setShowCategoryForm(false);
+        }
+      } catch(e: any) {
+        if (typeof e.issues !== "undefined"){
+          toast.error(e.issues[0].message);
+        } else {
+          toast.error(e.message);
+        }
+      }
     }
+  })
+
+  const confirmEditCategory = async () => {
+    await invoke("update_category", {id: category.id, name: categorySave.name});
+    toast.success("Categoria actualizada con exito.");
+    await loadCategories();
+    setShowConfirm(false);
+    setShowCategoryForm(false);
   }
 
   return (
-    <div className='add-category-modal modal' id="add-category-modal" onClick={bgClose}>
+    <>
       <div>
-        <h1 className="text-2xl font-bold">{category === null ? "Agregar categoria" : "Editar categoria"}</h1>
-        <form onSubmit={category === null ? createCategory.handleSubmit : editCategory.handleSubmit}>
+        <form onSubmit={category ? editCategory.handleSubmit : createCategory.handleSubmit}>
           <div>
             <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="addCategoryName">
               Nombre de la categoria
@@ -254,12 +229,13 @@ const CategoryForm = ({setShowCategoryForm, getCategories, category, categories}
           <div className="flex items-center justify-between flex-col form-submit">
             <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline form-submit" type="submit">
                 <FontAwesomeIcon icon={faSave} />
-                &nbsp;{category === null ? "Agregar" : "Guardar"}
+                &nbsp;{category ? "Guardar" : "Agregar"}
             </button>
           </div>
         </form>
       </div>
-    </div>
+      <ActionModal title={"Guardar cambios"} body={"¿Desea confirmar los cambios realizados a la categoria?"} showModal={showConfirm} onConfirm={confirmEditCategory} onCancel={() => setShowConfirm(false) } className={"confirm-modal"} />
+    </>
   )
 }
 
