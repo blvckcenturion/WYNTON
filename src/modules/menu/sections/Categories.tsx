@@ -140,7 +140,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
 
   // Category State Variables
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
-  const [categorySave, setCategorySave] = useState(null);
+  const [categorySave, setCategorySave] = useState<any>(null);
 
   // Category Validation Schema
   const Category = z.object({
@@ -184,9 +184,9 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
       name: category != null ? category.name : '',
     },
     onSubmit: async (values) => {
-      let cat = Category.parse(values);
-      cat.name = cat.name.toLowerCase();
       try {
+        let cat = Category.parse(values);
+        cat.name = cat.name.toLowerCase();
         let filtered = categories.filter((el : any) => { if (el.name.trim().toLowerCase() === cat.name.trim().toLowerCase() && el.id !== category.id) return el; });
         if (filtered.length > 0 && category.id !== filtered[0].id) {
           throw new Error("Ya existe una categoria con ese nombre.");
