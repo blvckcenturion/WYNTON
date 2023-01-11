@@ -326,9 +326,8 @@ div.item-table {
   }
   
   &::-webkit-scrollbar-thumb {
-      background-color: var(--main-color);
+      background-color: var(--accent-color-1);
       margin: 10px 0;
-      border-radius: 10px;
       box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   }
   height: 80%;
@@ -337,10 +336,9 @@ div.item-table {
       width: 85%;
   }
   @apply shadow-md;
-  border-radius: 10px;
   background-color: var(--bg-color);
-  padding: 15px;
-  overflow: auto;
+  border: 15px solid var(--bg-color);
+  overflow-y: auto;
   table{
       width: 100%;
   }
@@ -348,9 +346,14 @@ div.item-table {
   table, th, td {
     border: 1px solid var(--main-color);
     border-collapse: collapse;
+    position: relative;
     thead{
-        background-color: var(--main-color);
-        color: var(--bg-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: var(--main-color);
+      color: var(--bg-color);
+      border: 0;
     }
     tbody{
       tr{

@@ -42,6 +42,7 @@ fn main() {
             commands::product::get_product,
             commands::product::get_all_product,
             commands::product::find_by_name_product,
+            commands::product::get_all_product_by_category,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

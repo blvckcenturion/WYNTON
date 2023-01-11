@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import { z } from "zod";
 import { useFormik } from 'formik';
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
 import elementSearch from '../../utils/functions/elementSearch';
 import Modal from '../../utils/components/modal';
 import ActionModal from '../../utils/components/actionModal';
+import categoryService from '../services/category';
 
 // Main component for the categories section
 const Categories = () => {
@@ -25,19 +26,14 @@ const Categories = () => {
   // Categories Section On Mount Function
   useEffect(() => {
     (async () => {
-      await loadCategories();
+      await loadCategories()
     })()
   }, [])
   
   // Helper function to Load all the active categories from the backend
   const loadCategories = async () => {
-    try {
-      let res : string = await invoke("get_all_category");
-      let cat : any = JSON.parse(res);
-      setCategories(cat);
-    } catch(e: any) {
-      toast.error(e.message);
-    }
+    const categories = await categoryService.load()
+    setCategories(categories)
   }
 
   // Helper function to search for categories using a specific term
@@ -72,6 +68,15 @@ const Categories = () => {
   // Invoker function to set a category's status as deleted
   const deleteCategory = async () => {
     try {
+      let products : string = await invoke("get_all_product_by_category", {id: categoryDelete});
+      products = await JSON.parse(products);
+
+      if(products.length > 0){
+        throw new Error("No se puede eliminar la categoria porque tiene productos asociados.");
+      }
+
+
+      
       await invoke("delete_category", {id: categoryDelete}).then((res) => {
         toast.success("Categoria eliminada correctamente.");
       });
@@ -208,6 +213,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
     }
   })
 
+  // Invoker function that will update the selected category
   const confirmEditCategory = async () => {
     await invoke("update_category", {id: category.id, name: categorySave.name});
     toast.success("Categoria actualizada con exito.");

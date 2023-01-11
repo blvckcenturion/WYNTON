@@ -13,6 +13,7 @@ import { exists } from '@tauri-apps/api/fs'
 import capitalize from '../../utils/functions/capitalize'
 import elementSearch from '../../utils/functions/elementSearch'
 import ActionModal from '../../utils/components/actionModal'
+import productService from '../services/product'
 
 // Main component for the products section 
 const Products = () => {
@@ -30,37 +31,14 @@ const Products = () => {
   // Products Section On Mount Function
   useEffect(() => {
     (async () => {
-      try {
-        let res : string = await invoke("get_all_category");
-        let cat : any = JSON.parse(res);
-        setCategories(cat);
         await loadProducts();
-      } catch(e: any) {
-        toast.error(e.message);
-      }
     })()
   }, [])
   
-  // Helper function to Load all the active products from the backend
+  // Helper function to Load all the active products from the backend and set the state
   const loadProducts = async () => {
-    try{
-        let prod : string = await invoke("get_all_product")
-        let products : any = await JSON.parse(prod);
-
-        products = await products.map( async (product : any) => {
-
-        return {
-          ...product,
-          category: categories.filter(e => {
-            return e.id == product.category_id
-          })[0],
-          photo: product.photo ? await exists(product.photo) ?  convertFileSrc(product.photo) : null : null,
-        }
-      })
-      setProducts(await Promise.all(products))
-    } catch(e: any){
-      toast.error(e.message)
-    }
+      const products : any[] = await productService.load();
+      setProducts(products);
   }
 
   // Helper function to search for products using a specific term
@@ -186,6 +164,8 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
   const [photo, setPhoto] = useState<string>("");
   const [photoSrc, setPhotoSrc] = useState<string>("");
   const [photoReplaced, setPhotoReplaced] = useState<boolean>(false);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [productSave, setProductSave] = useState<any>(null);
 
   // Product Form On Mount Function
   useEffect(() => {
@@ -205,12 +185,12 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
       required_error: "El precio del producto es requerido."
     }).min(0, {message: "El precio del producto debe ser mayor o igual a 0."}).positive({message: "El precio del producto debe ser mayor o igual a 0."}),
     description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim().optional(),
-    categoryId: z.number().optional(),
+    categoryId: z.number().optional().nullable(),
     photo: z.string().optional()
   })
 
   // Create New Product Form Configuration
-  const addProduct = useFormik({
+  const createProduct = useFormik({
     initialValues: {
       name: "",
       price: 0,
@@ -268,7 +248,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
         let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)});
         prod.name = prod.name.toLowerCase();
         prod.description = prod.description?.toLowerCase();
-        prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
+        prod.categoryId = prod.categoryId === -1 ? null : prod.categoryId;
 
         let filtered = products.filter((el : any) => {if (el.name.trim().toLowerCase() == prod.name.trim().toLowerCase() && el.id !== product.id) return el} );
 
@@ -276,16 +256,18 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
           throw new Error("Ya existe un producto con ese nombre.");
         }
 
-        if (photoReplaced && photo != "" && photoSrc != "") {
-          prod.photo = await createImage("products", photoSrc);
+        if(prod.name !== product.name || prod.price !== product.price || prod.description !== product.description || prod.categoryId !== product.category_id || photoReplaced) {
+
+          console.log(prod.categoryId !== product.category_id)
+          console.log(prod.categoryId)
+          console.log(product.category_id)
+          
+          setProductSave(prod);
+          setShowConfirm(true);
+        } else {
+          setShowProductForm(false);
         }
-
-        await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: prod.photo});
-
-        loadProducts();
-        setShowProductForm(false);
-        toast.success("Producto actualizado con exito.");
-
+        
       } catch (e: any) {
         console.log(e)
         if (typeof e.issues !== "undefined"){
@@ -325,83 +307,99 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
       toast.error(e.message);  
     }
   }
-  
-  const deleteImage = () => {
-    setPhoto("");
-    setPhotoSrc("");
+
+  // Invoker function that will update the selected product
+  const confirmEditProduct = async () => {
+    let prod = productSave;
+
+    if (photoReplaced && photo != "" && photoSrc != "") {
+      console.log("replacing photo")
+      prod.photo = await createImage("products", photoSrc);
+    } else {
+      console.log("not replacing photo")
+      prod.photo = null;
+    }
+
+    await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: photoReplaced ? prod.photo : product.photo_path});
+
+    loadProducts();
+    setShowProductForm(false);
+    toast.success("Producto actualizado con exito.");
   }
 
-
   return (
-    <div>
-      <form className="px-8 pt-6 pb-8 mb-4" onSubmit={product !== null ? editProduct.handleSubmit : addProduct.handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
-                Nombre del producto
-              </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={product ? editProduct.handleChange("name") :addProduct.handleChange("name")} value={product ? editProduct.values.name :addProduct.values.name}/>
-            </div>
-            <div className="mb-4">
-              <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productPrice">
-                Precio del producto
-              </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={product ? editProduct.handleChange("price") :addProduct.handleChange("price")} value={product ? editProduct.values.price :addProduct.values.price}/>
-            </div>
-            <div className="mb-4">
-              <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
-                Descripcion del producto
-              </label>
-              <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" onChange={product ? editProduct.handleChange("description") :addProduct.handleChange("description")} value={product ? editProduct.values.description :addProduct.values.description}/>
-            </div>
-            <div className="mb-4">
-              <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productCategory">
-                Categoria del producto
-              </label>
-              <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategory" onChange={product ? editProduct.handleChange("categoryId") :addProduct.handleChange("categoryId")} value={product ? editProduct.values.categoryId :addProduct.values.categoryId}>
-                <option value="-1">Sin categoria</option>
-                {categories.map((category: any) => {
-                  return <option key={category.id} value={category.id}>{category.name}</option>
-                })}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
-                Imagen del producto
-              </label>
-              <div className={`photo ${photo.length > 0 ? "active" : "non-active"}`} id="productPhoto">
-                {photo.length == 0 && (
-                  <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onClick={handleImage}>
-                    <FontAwesomeIcon icon={faFileCirclePlus}/>
-                    <p>Escoger imagen</p>
-                  </div>
-                )}
-                {photo && photo.length > 0 && (
-                  <div>
-                    <div className="shadow appearance-none border rounded w-full text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                      <img src={photo} alt="product" />
-                    </div>
-                    <div>
-                      <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={deleteImage}>
-                        <FontAwesomeIcon icon={faTrash}/>
-                        &nbsp;Eliminar
-                      </button>
-                      <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={handleImage}>
-                        <FontAwesomeIcon icon={faEdit}/>
-                        &nbsp;Editar
-                      </button>
-                    </div>
-                  </div>
-                )}
+    <>
+      <div>
+        <form className="px-8 pt-6 pb-8 mb-4" onSubmit={product !== null ? editProduct.handleSubmit : createProduct.handleSubmit}>
+              <div className="mb-4">
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
+                  Nombre del producto
+                </label>
+                <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={product ? editProduct.handleChange("name") :createProduct.handleChange("name")} value={product ? editProduct.values.name : createProduct.values.name}/>
               </div>
-            </div>
-            <div className="flex items-center justify-between flex-col form-submit">
-              <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
-                <FontAwesomeIcon icon={faSave} />
-                &nbsp;{product ? "Guardar" : "Agregar"}
-              </button>
-            </div>
-        </form>
-    </div>
+              <div className="mb-4">
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productPrice">
+                  Precio del producto
+                </label>
+                <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={product ? editProduct.handleChange("price") :createProduct.handleChange("price")} value={product ? editProduct.values.price :createProduct.values.price}/>
+              </div>
+              <div className="mb-4">
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
+                  Descripcion del producto
+                </label>
+                <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" onChange={product ? editProduct.handleChange("description") :createProduct.handleChange("description")} value={product ? editProduct.values.description :createProduct.values.description}/>
+              </div>
+              <div className="mb-4">
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productCategory">
+                  Categoria del producto
+                </label>
+                <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productCategory" onChange={product ? editProduct.handleChange("categoryId") :createProduct.handleChange("categoryId")} value={product ? editProduct.values.categoryId :createProduct.values.categoryId}>
+                  <option value="-1">Sin categoria</option>
+                  {categories.map((category: any) => {
+                    return <option key={category.id} value={category.id}>{category.name}</option>
+                  })}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
+                  Imagen del producto
+                </label>
+                <div className={`photo ${photo.length > 0 ? "active" : "non-active"}`} id="productPhoto">
+                  {photo.length == 0 && (
+                    <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onClick={handleImage}>
+                      <FontAwesomeIcon icon={faFileCirclePlus}/>
+                      <p>Escoger imagen</p>
+                    </div>
+                  )}
+                  {photo && photo.length > 0 && (
+                    <div>
+                      <div className="shadow appearance-none border rounded w-full text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <img src={photo} alt="product" />
+                      </div>
+                      <div>
+                        <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={() => { setPhoto(""); setPhotoSrc(""); setPhotoReplaced(true) }}>
+                          <FontAwesomeIcon icon={faTrash}/>
+                          &nbsp;Eliminar
+                        </button>
+                        <button className={`${photo.length > 0 ? "active" : ""}`} type="button" onClick={handleImage}>
+                          <FontAwesomeIcon icon={faEdit}/>
+                          &nbsp;Editar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between flex-col form-submit">
+                <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
+                  <FontAwesomeIcon icon={faSave} />
+                  &nbsp;{product ? "Guardar" : "Agregar"}
+                </button>
+              </div>
+          </form>
+      </div>
+      <ActionModal title={"Guardar cambios"} body={"¿Desea confirmar los cambios realizados al producto?"} showModal={showConfirm} onConfirm={confirmEditProduct} onCancel={() => setShowConfirm(false)} className={"confirm-modal"}/>
+    </>
   )
 }
 
