@@ -67,25 +67,10 @@ const Categories = () => {
 
   // Invoker function to set a category's status as deleted
   const deleteCategory = async () => {
-    try {
-      let products : string = await invoke("get_all_product_by_category", {id: categoryDelete});
-      products = await JSON.parse(products);
-
-      if(products.length > 0){
-        throw new Error("No se puede eliminar la categoria porque tiene productos asociados.");
-      }
-
-
-      
-      await invoke("delete_category", {id: categoryDelete}).then((res) => {
-        toast.success("Categoria eliminada correctamente.");
-      });
+      await categoryService.delete(categoryDelete);
       await loadCategories();
       setCategoryDelete(null);
       setShowCategoryDelete(false);
-    } catch(e: any) {
-      toast.error(e.message);
-    }
   }
 
   return (
@@ -147,12 +132,6 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [categorySave, setCategorySave] = useState<any>(null);
 
-  // Category Validation Schema
-  const Category = z.object({
-    name: z.string().trim()
-    .max(20, {message: "El nombre de la categoria debe ser menor o igual a 20 caracteres."}).min(1, {message: "El nombre de la categoria es requerido."}),
-  })
-  
   // Create New Category Form Configuration
   const createCategory = useFormik({
     initialValues: {
@@ -160,7 +139,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
     },
     onSubmit: async (values) => {
       try {
-        let cat = Category.parse(values);
+        let cat = categoryService.categoryValidationSchema.parse(values);
         cat.name = cat.name.toLowerCase();
         await invoke("find_by_name_category", {name: cat.name}).then((res : any) => {
           res = JSON.parse(res);
@@ -190,7 +169,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
     },
     onSubmit: async (values) => {
       try {
-        let cat = Category.parse(values);
+        let cat = categoryService.categoryValidationSchema.parse(values);
         cat.name = cat.name.toLowerCase();
         let filtered = categories.filter((el : any) => { if (el.name.trim().toLowerCase() === cat.name.trim().toLowerCase() && el.id !== category.id) return el; });
         if (filtered.length > 0 && category.id !== filtered[0].id) {
@@ -215,8 +194,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
 
   // Invoker function that will update the selected category
   const confirmEditCategory = async () => {
-    await invoke("update_category", {id: category.id, name: categorySave.name});
-    toast.success("Categoria actualizada con exito.");
+    await categoryService.update({id: category.id, name: categorySave.name})
     await loadCategories();
     setShowConfirm(false);
     setShowCategoryForm(false);
@@ -246,3 +224,4 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
 }
 
 export default Categories
+export {CategoryForm}

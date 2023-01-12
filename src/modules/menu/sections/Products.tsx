@@ -14,6 +14,7 @@ import capitalize from '../../utils/functions/capitalize'
 import elementSearch from '../../utils/functions/elementSearch'
 import ActionModal from '../../utils/components/actionModal'
 import productService from '../services/product'
+import categoryService from '../services/category'
 
 // Main component for the products section 
 const Products = () => {
@@ -32,6 +33,8 @@ const Products = () => {
   useEffect(() => {
     (async () => {
         await loadProducts();
+        const categories : any[] = await categoryService.load();
+        setCategories(categories);
     })()
   }, [])
   
@@ -89,14 +92,9 @@ const Products = () => {
 
   // Invoker function to set a product's status as deleted
   const deleteProduct = async () => {
-    try{
-      await invoke("delete_product", {id: productDelete})
-      loadProducts()
-      setShowProductDelete(false)
-      toast.success("Producto eliminado correctamente")
-    } catch(e: any){
-      toast.error(e.message)
-    }
+    if (productDelete !== null) await productService.delete(productDelete)
+    loadProducts()
+    setShowProductDelete(false)
   }
 
   return (
@@ -152,7 +150,7 @@ const Products = () => {
       <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
         <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} />
       </Modal>
-      <ActionModal title="Eliminar producto" body="¿Esta seguro que deseas eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
+      <ActionModal title="Eliminar producto" body="¿Esta seguro que desea eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
     </>
   )
 }
@@ -175,20 +173,6 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     }
   }, [])
 
-  // Product Validation Schema
-  const Product = z.object({
-    name: z.string({
-      required_error: "El nombre del producto es requerido."
-    }).trim().max(50, {message: "El nombre del producto debe ser menor o igual a 50 caracteres."}).min(1, {message: "El nombre del producto es requerido."}),
-    price: z.number({
-      invalid_type_error: "El precio debe ser un numero valido.",
-      required_error: "El precio del producto es requerido."
-    }).min(0, {message: "El precio del producto debe ser mayor o igual a 0."}).positive({message: "El precio del producto debe ser mayor o igual a 0."}),
-    description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim().optional(),
-    categoryId: z.number().optional().nullable(),
-    photo: z.string().optional()
-  })
-
   // Create New Product Form Configuration
   const createProduct = useFormik({
     initialValues: {
@@ -199,7 +183,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     },
     onSubmit: async (values) => {
       try {
-        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)}); 
+        let prod = productService.productValidationSchema.parse({...values, categoryId: parseInt(values.categoryId)}); 
         prod.name = prod.name.toLowerCase();
         prod.description = prod.description?.toLowerCase();
         prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
@@ -245,7 +229,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     }, 
     onSubmit: async (values) => {
       try {
-        let prod = Product.parse({...values, categoryId: parseInt(values.categoryId)});
+        let prod = productService.productValidationSchema.parse({...values, categoryId: parseInt(values.categoryId)});
         prod.name = prod.name.toLowerCase();
         prod.description = prod.description?.toLowerCase();
         prod.categoryId = prod.categoryId === -1 ? null : prod.categoryId;
@@ -257,11 +241,6 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
         }
 
         if(prod.name !== product.name || prod.price !== product.price || prod.description !== product.description || prod.categoryId !== product.category_id || photoReplaced) {
-
-          console.log(prod.categoryId !== product.category_id)
-          console.log(prod.categoryId)
-          console.log(product.category_id)
-          
           setProductSave(prod);
           setShowConfirm(true);
         } else {
@@ -313,18 +292,14 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     let prod = productSave;
 
     if (photoReplaced && photo != "" && photoSrc != "") {
-      console.log("replacing photo")
       prod.photo = await createImage("products", photoSrc);
     } else {
-      console.log("not replacing photo")
       prod.photo = null;
     }
-
-    await invoke("update_product", {id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: photoReplaced ? prod.photo : product.photo_path});
+    await productService.update({id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: photoReplaced ? prod.photo : product.photo_path})
 
     loadProducts();
     setShowProductForm(false);
-    toast.success("Producto actualizado con exito.");
   }
 
   return (
@@ -403,4 +378,5 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
   )
 }
 
-export default Products
+export default Products;
+export { ProductForm };
