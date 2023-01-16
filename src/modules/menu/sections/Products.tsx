@@ -6,7 +6,7 @@ import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit} from '@fortawesome/free-solid-svg-icons'
+import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit, faCancel} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/components/modal'
 import createImage from '../../utils/functions/createImage'
 import { exists } from '@tauri-apps/api/fs'
@@ -148,7 +148,7 @@ const Products = () => {
         
       </div>
       <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
-        <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} />
+        <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} setProduct={setProductEdit}/>
       </Modal>
       <ActionModal title="Eliminar producto" body="¿Esta seguro que desea eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
     </>
@@ -156,7 +156,7 @@ const Products = () => {
 }
 
 // Component in charge of creating and editing products.
-const ProductForm = ({ categories, setShowProductForm, loadProducts, product, products}: { categories: any[], setShowProductForm : Function, loadProducts : Function, product : any | null, products: any[]}) => {
+const ProductForm = ({ categories, setShowProductForm, loadProducts, product, products, setProduct}: { categories: any[], setShowProductForm : Function, loadProducts : Function, product : any | null, products: any[], setProduct : Function}) => {
   
   // Product Form State Variables
   const [photo, setPhoto] = useState<string>("");
@@ -302,29 +302,36 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     setShowProductForm(false);
   }
 
+  // Helper function to close the modal in case of cancelation
+  const cancelEditProduct = () => {
+    setShowProductForm(false);
+    setProduct(null);
+  }
+
+
   return (
     <>
       <div>
-        <form className="px-8 pt-6 pb-8 mb-4" onSubmit={product !== null ? editProduct.handleSubmit : createProduct.handleSubmit}>
-              <div className="mb-4">
+        <form onSubmit={product !== null ? editProduct.handleSubmit : createProduct.handleSubmit}>
+              <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
-                  Nombre del producto
+                  {`Nombre del producto ${product ? editProduct.values.name.length > 0 ? `(${editProduct.values.name.length})` : ""  : createProduct.values.name.length > 0 ? `(${createProduct.values.name.length})` : ""}`}
                 </label>
                 <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={product ? editProduct.handleChange("name") :createProduct.handleChange("name")} value={product ? editProduct.values.name : createProduct.values.name}/>
               </div>
-              <div className="mb-4">
+              <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productPrice">
                   Precio del producto
                 </label>
                 <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={product ? editProduct.handleChange("price") :createProduct.handleChange("price")} value={product ? editProduct.values.price :createProduct.values.price}/>
               </div>
-              <div className="mb-4">
+              <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
                   Descripcion del producto
                 </label>
-                <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" type="text" onChange={product ? editProduct.handleChange("description") :createProduct.handleChange("description")} value={product ? editProduct.values.description :createProduct.values.description}/>
+                <textarea className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" onChange={product ? editProduct.handleChange("description") :createProduct.handleChange("description")} value={product ? editProduct.values.description :createProduct.values.description}/>
               </div>
-              <div className="mb-4">
+              <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productCategory">
                   Categoria del producto
                 </label>
@@ -365,10 +372,14 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
                   )}
                 </div>
               </div>
-              <div className="flex items-center justify-between flex-col form-submit">
-                <button className="text-white font-bold py-2 px-8 rounded focus:outline-none focus:shadow-outline" type="submit">
+              <div className="flex flex-row form-submit">
+                <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                   <FontAwesomeIcon icon={faSave} />
                   &nbsp;{product ? "Guardar" : "Agregar"}
+                </button>
+                <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={cancelEditProduct}>
+                  <FontAwesomeIcon icon={faCancel} />
+                  &nbsp;Cancelar
                 </button>
               </div>
           </form>

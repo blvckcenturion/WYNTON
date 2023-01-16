@@ -108,8 +108,8 @@ const ViewMenu = () => {
                                         </div>
                                         <div>
                                             <h4>{product.name}</h4>
-                                            {product.description ? <p>{product.description}</p> : null}
-                                            <p>{product.price} BOB</p>
+                                            <p className="desc">{ product.description ? product.description.length > 53 ? product.description.slice(50) + "..." : product.description : "N/A"}</p>
+                                            <p>{product.price.toFixed(2)} BS</p>
                                         </div>
                                         <div>
                                             <button onClick={() => {setProductEdit(product); setShowModalEdit(true)}}>
@@ -137,9 +137,9 @@ const ViewMenu = () => {
             <ActionModal title={productDelete ? "Eliminar producto" : "Eliminar categoria"} body={productDelete ? "¿Esta seguro que desea eliminar este producto?" : "¿Esta seguro que desea eliminar esta categoria?"} showModal={showModalDelete} onCancel={() => {setShowModalDelete(false); productDelete ? setProductDelete(null) : setCategoryDelete(null)}} onConfirm={productDelete ? deleteProduct : deleteCategory} />
             <Modal className={productEdit ? "add-product-modal" : "add-category-modal"} title={productEdit ? "Editar producto" : "Editar categoria"} showModal={showModalEdit} onClose={() => {setShowModalEdit(false); productEdit ? setProductEdit(null) : setCategoryEdit(null)}} >
                 {productEdit ? (
-                    <ProductForm categories={categories} setShowProductForm={setShowModalEdit} loadProducts={loadCategories} product={productEdit} products={products}/>
+                    <ProductForm categories={categories} setShowProductForm={setShowModalEdit} loadProducts={loadCategories} product={productEdit} products={products} setProduct={setProductEdit}/>
                 ) : (
-                    <CategoryForm setShowCategoryForm={setShowModalEdit} loadCategories={loadCategories} category={categoryEdit} categories={categories}/>
+                    <CategoryForm setShowCategoryForm={setShowModalEdit} loadCategories={loadCategories} category={categoryEdit} categories={categories} setCategory={setCategoryEdit}/>
                 )}
             </Modal>
         </>

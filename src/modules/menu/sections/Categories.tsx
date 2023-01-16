@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useFormik } from 'formik';
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAdd, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faAdd, faCancel, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
 import elementSearch from '../../utils/functions/elementSearch';
 import Modal from '../../utils/components/modal';
 import ActionModal from '../../utils/components/actionModal';
@@ -15,7 +15,6 @@ const Categories = () => {
 
   // Categories Section State Variables
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState<string>("");
   const [categoryEdit, setCategoryEdit] = useState<any>(null);
   const [categorySearch, setCategorySearch] = useState<any[] | null>(null);
   const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
@@ -118,7 +117,7 @@ const Categories = () => {
         </div>
     </div>
     <Modal className={"add-category-modal"} title={categoryEdit ? "Editar categoria" : "Agregar categoria"} showModal={showCategoryForm} onClose={() => {setShowCategoryForm(false); setCategoryEdit(null)}}>
-      <CategoryForm setShowCategoryForm={setShowCategoryForm} loadCategories={loadCategories} category={categoryEdit} categories={categories}/>
+      <CategoryForm setShowCategoryForm={setShowCategoryForm} loadCategories={loadCategories} category={categoryEdit} categories={categories} setCategory={setCategoryEdit}/>
     </Modal>
     <ActionModal title="Eliminar categoria" body="¿Estas seguro que deseas eliminar esta categoria?" showModal={showCategoryDelete} onConfirm={deleteCategory} onCancel={() => setShowCategoryDelete(false)}/>
     </>
@@ -126,7 +125,7 @@ const Categories = () => {
 }
 
 // Component in charge of creating and editing categories.
-const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories} : {setShowCategoryForm : Function, loadCategories : Function, category : any, categories : any[]}) => {
+const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories, setCategory} : {setShowCategoryForm : Function, loadCategories : Function, category : any, categories : any[], setCategory : Function}) => {
 
   // Category State Variables
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
@@ -200,6 +199,12 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
     setShowCategoryForm(false);
   }
 
+  // Helper function to close the modal in case of cancelation
+  const cancelEditCategory = () => {
+    setShowCategoryForm(false);
+    setCategory(null);
+  }
+
   return (
     <>
       <div>
@@ -210,10 +215,14 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
             </label>
             <input className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="addCategoryName" type="text" value={category === null ? createCategory.values.name : editCategory.values.name} onChange={category === null ? createCategory.handleChange("name") : editCategory.handleChange("name")}/>
           </div>
-          <div className="flex items-center justify-between flex-col form-submit">
-            <button className="mb-2 text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline form-submit" type="submit">
+          <div className="flex flex-row form-submit">
+            <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                 <FontAwesomeIcon icon={faSave} />
                 &nbsp;{category ? "Guardar" : "Agregar"}
+            </button>
+            <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={cancelEditCategory}>
+                <FontAwesomeIcon icon={faCancel} />
+                &nbsp; Cancelar
             </button>
           </div>
         </form>
