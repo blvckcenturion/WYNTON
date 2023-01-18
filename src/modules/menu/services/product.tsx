@@ -22,7 +22,7 @@ class productService {
     })
 
     // Load all active products from the database 
-    public static async load() : Promise<any[]>{
+    public static async load(orderBy: string, order: string) : Promise<any[]>{
         try{
             const categories: any[] = await categoryService.load()
             const response : string = await invoke("get_all_product")
@@ -37,6 +37,10 @@ class productService {
                     photo_path: product.photo
                 }
             })
+
+            products = await Promise.all(products)
+
+
 
             return await Promise.all(products)
         } catch(e : any) {

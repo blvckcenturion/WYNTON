@@ -139,7 +139,7 @@ body{
 }
 
 .form-search{
-  width: 90%;
+  width: 95%;
         @media screen and (min-width: 1468px) {
             width: 85%;
         }
@@ -360,7 +360,7 @@ div.item-table {
       box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   }
   height: 80%;
-  width: 90%;
+  width: 95%;
   @media screen and (min-width: 1468px) {
       width: 85%;
   }
@@ -383,6 +383,17 @@ div.item-table {
       background-color: var(--main-color);
       color: var(--bg-color);
       border: 0;
+      tr{
+        th{
+          &.active{
+            background-color: var(--accent-color-1);
+            
+            svg{
+              color: var(--bg-color);
+            }
+          }
+        }
+      }
     }
     tbody{
       tr{
@@ -416,6 +427,6 @@ div.item-table {
           }
       }
     }
-    font-size: 1rem;
+    font-size: .9rem;
   }
 }

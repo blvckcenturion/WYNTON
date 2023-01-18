@@ -6,7 +6,7 @@ import { useFormik } from 'formik'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { faFileCirclePlus, faFileImage, faAdd, faSave, faTrash, faEdit, faCancel} from '@fortawesome/free-solid-svg-icons'
+import { faFileCirclePlus, faAngleUp, faAngleDown, faFileImage, faAdd, faSave, faTrash, faEdit, faCancel} from '@fortawesome/free-solid-svg-icons'
 import Modal from '../../utils/components/modal'
 import createImage from '../../utils/functions/createImage'
 import { exists } from '@tauri-apps/api/fs'
@@ -15,6 +15,7 @@ import elementSearch from '../../utils/functions/elementSearch'
 import ActionModal from '../../utils/components/actionModal'
 import productService from '../services/product'
 import categoryService from '../services/category'
+
 
 // Main component for the products section 
 const Products = () => {
@@ -28,6 +29,8 @@ const Products = () => {
   const [productDelete, setProductDelete] = useState<number | null>(null);
   const [productEdit, setProductEdit] = useState<object | null>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [orderBy, setOrderBy] = useState<string>("name");
+  const [order, setOrder] = useState<string>("asc");
 
   // Products Section On Mount Function
   useEffect(() => {
@@ -130,12 +133,12 @@ const Products = () => {
               <table className='table-auto'>
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Descripcion</th>
-                    <th>Categoria</th>
+                    <th className={orderBy === "name" ? "active" : ""} onClick={() => {orderBy === "name" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("name")}}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "price" ? "active" : ""} onClick={() => {orderBy === "price" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("price")}}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "description" ?  "active" :""} onClick={() => {orderBy === "description" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("description")}}>Descripcion&nbsp;{orderBy === "description" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "category" ? "active" : ""} onClick={() => {orderBy === "category" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("category")}}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
                     <th>Imagen</th>
-                    <th>Acciones</th>
+                    <th>Acciones</th>  
                   </tr>
                 </thead>
                 <tbody>
