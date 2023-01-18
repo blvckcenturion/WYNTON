@@ -278,6 +278,25 @@ form{
           background-color: var(--main-color) !important;
       }
     }
+
+    > label {
+      > span {
+        transition: all 0.5s ease-in-out;
+        &:hover{
+          cursor: pointer;
+          transition: inherit;
+          &::after{
+            transition: inherit;
+            position: absolute;
+            margin-left: 10px;
+            content: "Campo Requerido";
+            font-weight: bold;
+            color: red;
+          }
+        }
+        
+      }
+    }
     
     &.form-submit{
       align-items: center;

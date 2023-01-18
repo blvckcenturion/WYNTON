@@ -14,6 +14,7 @@ class categoryService {
     public static async load() {
         try {
             const response : string = await invoke("get_all_category")
+            const categories = await JSON.parse(response)
             return await JSON.parse(response);
         } catch(e: any) {
             displayError(e)

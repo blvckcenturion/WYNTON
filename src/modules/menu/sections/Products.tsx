@@ -315,19 +315,19 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
         <form onSubmit={product !== null ? editProduct.handleSubmit : createProduct.handleSubmit}>
               <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
-                  {`Nombre del producto ${product ? editProduct.values.name.length > 0 ? `(${editProduct.values.name.length})` : ""  : createProduct.values.name.length > 0 ? `(${createProduct.values.name.length})` : ""}`}
+                  {`Nombre del producto ${product ? editProduct.values.name.length > 0 ? `(${editProduct.values.name.length})` : ""  : createProduct.values.name.length > 0 ? `(${createProduct.values.name.length})` : ""}`}<span>(*)</span>
                 </label>
                 <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={product ? editProduct.handleChange("name") :createProduct.handleChange("name")} value={product ? editProduct.values.name : createProduct.values.name}/>
               </div>
               <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productPrice">
-                  Precio del producto
+                  Precio del producto <span>(*)</span>
                 </label>
                 <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productPrice" type="number" step="0.01" onChange={product ? editProduct.handleChange("price") :createProduct.handleChange("price")} value={product ? editProduct.values.price :createProduct.values.price}/>
               </div>
               <div className="mb-1">
                 <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productDescription">
-                  Descripcion del producto
+                  {`Descripcion del producto ${product ? editProduct.values.description.length > 0 ? `(${editProduct.values.description.length})` : ""  : createProduct.values.description.length > 0 ? `(${createProduct.values.description.length})` : ""} `}
                 </label>
                 <textarea className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productDescription" onChange={product ? editProduct.handleChange("description") :createProduct.handleChange("description")} value={product ? editProduct.values.description :createProduct.values.description}/>
               </div>

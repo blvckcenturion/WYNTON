@@ -9,12 +9,13 @@ import elementSearch from '../../utils/functions/elementSearch';
 import Modal from '../../utils/components/modal';
 import ActionModal from '../../utils/components/actionModal';
 import categoryService from '../services/category';
+import productService from '../services/product';
 
 // Main component for the categories section
 const Categories = () => {
 
   // Categories Section State Variables
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<any>([]);
   const [categoryEdit, setCategoryEdit] = useState<any>(null);
   const [categorySearch, setCategorySearch] = useState<any[] | null>(null);
   const [categorySearchTerm, setCategorySearchTerm] = useState<string>("");
@@ -31,7 +32,12 @@ const Categories = () => {
   
   // Helper function to Load all the active categories from the backend
   const loadCategories = async () => {
-    const categories = await categoryService.load()
+    let categories = await productService.loadByCategory()
+    categories = categories.filter(e => {
+      if (e.id !== null) {
+        return e
+      }
+    })
     setCategories(categories)
   }
 
@@ -51,6 +57,7 @@ const Categories = () => {
       return (
         <tr key={category.id}>
           <td>{category.name}</td>
+          <td>{category.products.length}</td>
           <td>
             <button className="text-white font-bold px-8 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => {setShowCategoryForm(true); setCategoryEdit(category)}}>
               <FontAwesomeIcon icon={faEdit} />
@@ -105,6 +112,7 @@ const Categories = () => {
               <thead>
                 <tr>
                   <th>Nombre</th>
+                  <th>Productos Asociados</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -211,7 +219,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
         <form onSubmit={category ? editCategory.handleSubmit : createCategory.handleSubmit}>
           <div>
             <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="addCategoryName">
-              Nombre de la categoria
+              {`Nombre de la categoria ${category ? editCategory.values.name.length > 0 ? `(${editCategory.values.name.length})`: "" : createCategory.values.name.length > 0 ? `(${createCategory.values.name.length})` : ""}`} <span>(*)</span>
             </label>
             <input className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="addCategoryName" type="text" value={category === null ? createCategory.values.name : editCategory.values.name} onChange={category === null ? createCategory.handleChange("name") : editCategory.handleChange("name")}/>
           </div>

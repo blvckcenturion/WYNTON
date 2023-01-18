@@ -1,4 +1,4 @@
-import { faFileImage } from "@fortawesome/free-solid-svg-icons"
+import { faAngleDown, faAngleUp, faFileImage } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState } from "react"
 import ActionModal from "../../utils/components/actionModal"
@@ -20,6 +20,8 @@ const ViewMenu = () => {
     const [categoryEdit, setCategoryEdit] = useState<any>(null)
     const [showModalDelete, setShowModalDelete] = useState<boolean>(false)
     const [showModalEdit, setShowModalEdit] = useState<boolean>(false)
+    const [toggledCategories, setToggledCategories] = useState<any[]>([])
+
 
     
     // Products Section On Mount Function
@@ -40,6 +42,9 @@ const ViewMenu = () => {
     const loadCategories = async () => {
         const categories : any[] = await productService.loadByCategory()
         setCategories(categories)
+        let toggledCategories : any = {}
+        categories.forEach((category) => {toggledCategories[category.name] = false})
+        setToggledCategories(toggledCategories)
     }
 
     // Helper function to delete a product from the backend and update the state
@@ -70,10 +75,11 @@ const ViewMenu = () => {
         )
 
         return categories.map((category) => {
+
             return (
                 <div key={category.id} className="category">
                     <div>
-                        <h3>{category.name}{` (${category.products.length})`}</h3>
+                        <h3 onClick={() => setToggledCategories({...toggledCategories, [category.name] : !toggledCategories[category.name]})}>{category.name}{` (${category.products.length})`}&nbsp;&nbsp;&nbsp;{category.products.length > 0 ? <FontAwesomeIcon icon={toggledCategories[category.name] ? faAngleUp : faAngleDown} /> : null}</h3>
                         <div>
                             {category.id && (
                                 <>
@@ -89,7 +95,7 @@ const ViewMenu = () => {
                             )}
                         </div>
                     </div>
-                    {category.products.length > 0 && (
+                    {category.products.length > 0 && toggledCategories[category.name] == false && (
                         <div>
                             {category.products.map((product : any) => {
                                 return (
