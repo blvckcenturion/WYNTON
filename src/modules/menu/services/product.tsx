@@ -22,7 +22,7 @@ class productService {
     })
 
     // Load all active products from the database 
-    public static async load(orderBy: string, order: string) : Promise<any[]>{
+    public static async load(orderBy?: string, order?: string) : Promise<any[]>{
         try{
             const categories: any[] = await categoryService.load()
             const response : string = await invoke("get_all_product")
@@ -40,10 +40,24 @@ class productService {
 
             products = await Promise.all(products)
 
+            if(orderBy === "name") {
+                products = products.sort((a, b) => {
+                    return order === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+                })
+            } else if(orderBy === "price") {
+                products = products.sort((a, b) => {
+                    return order === "asc" ? a.price - b.price : b.price - a.price
+                })
+            } else if(orderBy === "category") {
+                products = products.sort((a, b) => {
+                    return order === "asc" ? a.category?.name.localeCompare(b.category?.name) : b.category?.name.localeCompare(a.category?.name)
+                })
+            }
 
 
-            return await Promise.all(products)
+            return products
         } catch(e : any) {
+            console.log(e)
             displayError(e)
             return [];
         }

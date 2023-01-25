@@ -43,7 +43,9 @@ const Products = () => {
   
   // Helper function to Load all the active products from the backend and set the state
   const loadProducts = async () => {
-      const products : any[] = await productService.load();
+      console.log(orderBy, order)
+      const products : any[] = await productService.load(orderBy, order);
+      console.log(products)
       setProducts(products);
   }
 
@@ -133,10 +135,10 @@ const Products = () => {
               <table className='table-auto'>
                 <thead>
                   <tr>
-                    <th className={orderBy === "name" ? "active" : ""} onClick={() => {orderBy === "name" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("name")}}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
-                    <th className={orderBy === "price" ? "active" : ""} onClick={() => {orderBy === "price" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("price")}}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
-                    <th className={orderBy === "description" ?  "active" :""} onClick={() => {orderBy === "description" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("description")}}>Descripcion&nbsp;{orderBy === "description" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
-                    <th className={orderBy === "category" ? "active" : ""} onClick={() => {orderBy === "category" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("category")}}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "name" ? "active" : ""} onClick={async () => {orderBy === "name" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("name"); await loadProducts();}}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "price" ? "active" : ""} onClick={async () => {orderBy === "price" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("price"); await loadProducts();}}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th>Descripcion</th>
+                    <th className={orderBy === "category" ? "active" : ""} onClick={async () => {orderBy === "category" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("category"); await loadProducts();}}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
                     <th>Imagen</th>
                     <th>Acciones</th>  
                   </tr>
