@@ -17,10 +17,8 @@ const Menu = () => {
                 return <ViewMenu/>
             case 2:
                 return <Products/>
-            case 3:
-                return <Categories/>
             default:
-                return <Combos/>
+                return <Categories/>
         }
     }
 
@@ -30,7 +28,6 @@ const Menu = () => {
                 <button className={tab == 1 ? "active" : undefined} onClick={() => handleToggle(1)} >Menu</button>
                 <button className={tab == 2 ? "active" : undefined} onClick={() => handleToggle(2)} >Productos</button>
                 <button className={tab == 3 ? "active" : undefined} onClick={() => handleToggle(3)}>Categorias</button>
-                <button className={tab == 4 ? "active" : undefined} onClick={() => handleToggle(4)}>Combos</button>
             </div>
             <div>
                 <Render/>

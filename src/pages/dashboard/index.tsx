@@ -2,7 +2,7 @@ import { useState } from "react";
 import Logo from "../../assets/logo"
 import NavigationOption from "../../modules/dashboard/NavigationOption"
 import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
-import { faUser, faBellConcierge } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faBellConcierge, faObjectGroup, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Menu from '../../modules/menu/Menu';
 
@@ -32,7 +32,9 @@ const Dashboard = () => {
                     </div>
                     <div className="dashboard-items">
                         <NavigationOption title={"Menu"} icon={faBellConcierge} onClick={() => handleToggle(1)} active={tab == 1}/>
-                        <NavigationOption title={"Empleados"} icon={faUser} onClick={() => handleToggle(2)} active={tab == 2}/>
+                        <NavigationOption title={"Combos"} icon={faObjectGroup} onClick={() =>handleToggle(2)} active={tab === 2}/>
+                        <NavigationOption title={"Usuarios"} icon={faUser} onClick={() => handleToggle(3)} active={tab === 3}/>
+                        <NavigationOption title={"Ordenes"} icon={faCartShopping} onClick={() =>handleToggle(4)} active={tab === 4}/>
                     </div>
                 </div>
                 <div className="dashboard-user-details shadow appearance-none rounded">
