@@ -30,7 +30,7 @@ const Products = () => {
   const [productEdit, setProductEdit] = useState<object | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [orderBy, setOrderBy] = useState<string>("name");
-  const [order, setOrder] = useState<string>("asc");
+  const [orderAsc, setOrderAsc] = useState<boolean>(true);
 
   // Products Section On Mount Function
   useEffect(() => {
@@ -43,10 +43,8 @@ const Products = () => {
   
   // Helper function to Load all the active products from the backend and set the state
   const loadProducts = async () => {
-      console.log(orderBy, order)
-      const products : any[] = await productService.load(orderBy, order);
-      console.log(products)
-      setProducts(products);
+    const products : any[] = await productService.load(orderBy, orderAsc ? "asc" : "desc");
+    setProducts(products);
   }
 
   // Helper function to search for products using a specific term
@@ -98,8 +96,23 @@ const Products = () => {
   // Invoker function to set a product's status as deleted
   const deleteProduct = async () => {
     if (productDelete !== null) await productService.delete(productDelete)
-    loadProducts()
+    await loadProducts()
     setShowProductDelete(false)
+  }
+
+  const handleProductLoadChange = async (orderByChange? : any, orderAscChange? : boolean) => {
+    if(orderAscChange != null){ 
+      setOrderAsc(orderAscChange)
+    } 
+    if(orderByChange != null){
+      setOrderBy(orderByChange)
+    }
+
+    console.log("handleProductLoadChange")
+    console.log("orderBy: ", orderBy)
+    console.log("orderAsc: ", orderAsc)
+    
+    await loadProducts()
   }
 
   return (
@@ -135,12 +148,12 @@ const Products = () => {
               <table className='table-auto'>
                 <thead>
                   <tr>
-                    <th className={orderBy === "name" ? "active" : ""} onClick={async () => {orderBy === "name" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("name"); await loadProducts();}}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
-                    <th className={orderBy === "price" ? "active" : ""} onClick={async () => {orderBy === "price" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("price"); await loadProducts();}}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "name" ? "active" : ""} onClick={async () => await handleProductLoadChange(orderBy !== "name" ? "name" : null, orderBy !== "name" ? true : !orderAsc )}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "price" ? "active" : ""} onClick={async () => await handleProductLoadChange(orderBy !== "price" ? "price" : null, orderBy !== "price" ? true : !orderAsc)}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
                     <th>Descripcion</th>
-                    <th className={orderBy === "category" ? "active" : ""} onClick={async () => {orderBy === "category" ? order === "asc" ? setOrder("desc") : setOrder("asc") : setOrderBy("category"); await loadProducts();}}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={order === "asc" ? faAngleUp : faAngleDown }/>}</th>
+                    <th className={orderBy === "category" ? "active" : ""} onClick={async () => await handleProductLoadChange(orderBy !== "category" ? "category" : null, orderBy  !== "category" ? true : !orderAsc)}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
                     <th>Imagen</th>
-                    <th>Acciones</th>  
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,7 +163,6 @@ const Products = () => {
             </table>
             )}
           </div>
-        
       </div>
       <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
         <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} setProduct={setProductEdit}/>

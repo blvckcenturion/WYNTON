@@ -53,8 +53,7 @@ class productService {
                     return order === "asc" ? a.category?.name.localeCompare(b.category?.name) : b.category?.name.localeCompare(a.category?.name)
                 })
             }
-
-
+            
             return products
         } catch(e : any) {
             console.log(e)

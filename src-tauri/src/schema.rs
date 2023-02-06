@@ -11,6 +11,29 @@ diesel::table! {
 }
 
 diesel::table! {
+    combo (id) {
+        id -> Integer,
+        denomination -> Text,
+        price -> Float,
+        status -> Integer,
+        createdAt -> Timestamp,
+        updatedAt -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
+    combo_item (id) {
+        id -> Integer,
+        combo_id -> Integer,
+        product_id -> Integer,
+        quantity -> Integer,
+        status -> Integer,
+        createdAt -> Timestamp,
+        updatedAt -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     product (id) {
         id -> Integer,
         name -> Text,
@@ -26,5 +49,7 @@ diesel::table! {
 
 diesel::allow_tables_to_appear_in_same_query!(
     category,
+    combo,
+    combo_item,
     product,
 );
