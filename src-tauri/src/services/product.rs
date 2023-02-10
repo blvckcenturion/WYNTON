@@ -1,4 +1,4 @@
-use crate::models::product::{ProductNew, ProductUpdate, Product};
+ use crate::models::product::{ProductNew, ProductUpdate, Product};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 use chrono::prelude::*;
