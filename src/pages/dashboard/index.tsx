@@ -5,6 +5,7 @@ import { faUserCircle } from '@fortawesome/free-regular-svg-icons';
 import { faUser, faBellConcierge, faObjectGroup, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Menu from '../../modules/menu/Menu';
+import Combos from "../../modules/combos/Combos";
 
 const Dashboard = () => {
     const [tab, setTab] = useState(1)
@@ -16,7 +17,9 @@ const Dashboard = () => {
     const Render = () : JSX.Element => {
         switch(tab){
             case 1:
-                return <Menu/>
+                return <Menu />
+            case 2:
+                return <Combos/>
             default:
                 return (<h1>Hola Mundo</h1>)
         }

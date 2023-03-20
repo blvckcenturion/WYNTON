@@ -43,6 +43,19 @@ fn main() {
             commands::product::get_all_product,
             commands::product::find_by_name_product,
             commands::product::get_all_product_by_category,
+            commands::combo::create_combo,
+            commands::combo::update_combo,
+            commands::combo::delete_combo,
+            commands::combo::get_combo,
+            commands::combo::get_all_combo,
+            commands::combo::find_by_name_combo,
+            commands::combo_item::create_combo_item,
+            commands::combo_item::update_combo_item,
+            commands::combo_item::delete_combo_item,
+            commands::combo_item::get_combo_item,
+            commands::combo_item::get_all_combo_item,
+            commands::combo_item::get_all_by_combo_id_combo_item,
+
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

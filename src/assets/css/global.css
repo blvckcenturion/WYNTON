@@ -6,7 +6,7 @@
 @import "./modules/dashboard/index.css";
 @import "./modules/auth/index.css";
 @import "./modules/utils/index.css";
-
+@import "./modules/combos/index.css";
 
 @tailwind base; 
 @tailwind components; 
