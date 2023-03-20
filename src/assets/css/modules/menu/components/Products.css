@@ -50,6 +50,7 @@
 
 .add-product-modal {
     > div{
+        background-color:red;
         width: 50%;
         height: 95%;
         > div:nth-child(2){

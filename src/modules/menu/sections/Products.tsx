@@ -100,22 +100,6 @@ const Products = () => {
     setShowProductDelete(false)
   }
 
-  const handleProductLoadChange = async (orderByChange? : any, orderAscChange? : boolean) => {
-    console.log('pe')
-    if(orderAscChange != null){ 
-      setOrderAsc(orderAscChange)
-    } 
-    if(orderByChange != null){
-      setOrderBy(orderByChange)
-    }
-
-    console.log("handleProductLoadChange")
-    console.log("orderBy: ", orderBy)
-    console.log("orderAsc: ", orderAsc)
-    
-    await loadProducts()
-  }
-
   return (
     <>
       <div className="add-product-section section">
@@ -149,10 +133,10 @@ const Products = () => {
               <table className='table-auto'>
                 <thead>
                   <tr>
-                    <th className={orderBy === "name" ? "active" : ""} onClick={() => handleProductLoadChange(orderBy !== "name" ? "name" : null, orderBy !== "name" ? true : !orderAsc )}>Nombre&nbsp;{orderBy === "name" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
-                    <th className={orderBy === "price" ? "active" : ""} onClick={() => handleProductLoadChange(orderBy !== "price" ? "price" : null, orderBy !== "price" ? true : !orderAsc)}>Precio&nbsp;{orderBy === "price" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
+                    <th>Nombre&nbsp;</th>
+                    <th>Precio&nbsp;</th>
                     <th>Descripcion</th>
-                    <th className={orderBy === "category" ? "active" : ""} onClick={() => handleProductLoadChange(orderBy !== "category" ? "category" : null, orderBy  !== "category" ? true : !orderAsc)}>Categoria&nbsp;{orderBy === "category" && <FontAwesomeIcon icon={orderAsc ? faAngleUp : faAngleDown }/>}</th>
+                    <th>Categoria&nbsp;</th>
                     <th>Imagen</th>
                     <th>Acciones</th>
                   </tr>
@@ -165,7 +149,7 @@ const Products = () => {
             )}
           </div>
       </div>
-      <Modal className={"add-product  -modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
+      <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
         <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} setProduct={setProductEdit}/>
       </Modal>
       <ActionModal title="Eliminar producto" body="¿Esta seguro que desea eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
