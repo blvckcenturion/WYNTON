@@ -35,15 +35,23 @@ pub fn update(conn: &mut SqliteConnection, item: &ComboItemUpdate, id: i32){
 }
 
 pub fn delete(conn: &mut SqliteConnection, id: i32){
-    use crate::schema::combo_item::dsl::{combo_item, updatedAt, status};
-
-    let _ = diesel::update(combo_item.find(id))
+    use crate::schema::combo_item::dsl::{combo_item, updatedAt, status, combo_id};
+    // delete combo item by combo id
+    let _ = diesel::update(combo_item.filter(combo_id.eq(id)))
         .set((
             status.eq(0),
             updatedAt.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();
+
+    // let _ = diesel::update(combo_item.find(id))
+    //     .set((
+    //         status.eq(0),
+    //         updatedAt.eq(Utc::now().naive_utc())
+    //     ))
+    //     .execute(conn)
+    //     .unwrap();
 }
 
 pub fn get(conn: &mut SqliteConnection, id: i32) -> String{

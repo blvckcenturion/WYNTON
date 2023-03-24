@@ -9,7 +9,9 @@ pub fn create_combo(denomination : String, price : f32, state: tauri::State<AppS
         denomination: &denomination,
         price: price,
     };
-    services::combo::create(conn, &item)
+    services::combo::create(conn, &item);
+    // retrieve the created combo using the find by name func
+    services::combo::find_by_name(conn, &denomination)
 }
 
 #[tauri::command]

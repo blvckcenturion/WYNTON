@@ -1,4 +1,203 @@
 .combos-module{
     width: 100%;
     height: 100%;
+    table{
+        thead{
+            th{
+                width: 15%;
+                &:nth-child(1){
+                    width: 20%;
+                }
+                &:nth-child(3){
+                    width: 40%;
+                }
+            }
+        }
+        tbody{
+            tr{
+
+                td{
+                    &:nth-child(3){
+                        height: 100%;
+                        padding: 0;
+                        > div{
+                            width: 100%;
+                            gap: 1px;
+                            &:not(:last-child){
+                                /* margin-bottom: 5px; */
+                                border-bottom: 1px solid var(--accent-color-1);
+                            }
+                            > div{
+                                &:nth-child(1){
+                                    border-right: 1px solid var(--accent-color-1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    form {
+        > div{
+            width:80%;
+            &:nth-child(3){
+                /* overflow: hidden; */
+                height: 60%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                h3{
+                    margin-bottom:5px;
+                }
+                > div{
+                    overflow: hidden;
+                    width: 100%;
+                    height: 100%;
+                    border: 2px solid var(--accent-color-1);
+                    border-radius: 10px;
+                    justify-content: space-between;
+                    align-items: center;    
+                    padding: 10px 0;
+                    > div{
+                        width: 95%;
+                        height: 100%;
+                        > div{
+                            width: 100%;
+                            &:first-child{
+                                margin-bottom:10px;
+                            }
+                            &:last-child{
+                                
+                                height: 80%;
+                                overflow: scroll;
+                                > div{
+                                    transition: all 0.3s ease;
+                                    width: 100%;
+                                    height: 15vh;
+                                    margin: 10px 0;
+                                    padding: 5px;
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    background-color: var(--bg-accent);
+                                    border-color: transparent;
+                                    border-width: 3px;
+                                    > div{
+                                        &:nth-child(1){
+                                            height: 100%;
+                                            width: 15%;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+
+                                            > img{
+                                                width: 90%;
+                                                height: 50%;    
+                                                object-fit: cover;
+                                                
+                                                border-radius: 5px;
+                                            }
+                                            > svg{
+                                                width: 90%;
+                                                height: 50%;    
+                                                object-fit: cover;
+                                                color: var(--accent-color-1);
+                                                border-radius: 5px;
+                                            }
+                                        } 
+                                        &:nth-child(2){
+                                            border-left: 1px solid var(--accent-color-1);
+                                            border-right: 1px solid var(--accent-color-1);
+                                            height: 100%;
+                                            width: 45%;
+                                            display: flex;
+                                            flex-direction: column;
+                                            justify-content: space-evenly;
+                                            align-items: center;
+                                            > p{
+                                                width: 100%;
+                                                padding: 5px;
+                                                font-size: 0.8rem;
+                                                &:first-child{
+                                                    border-bottom: 1px solid var(--accent-color-1);
+                                                    margin-bottom: 5px;
+                                                }
+                                                &:last-child{
+                                                    width: 50%;
+                                                    border: 1px solid var(--accent-color-1);
+                                                    color: var(--accent-color-1);
+                                                    margin-top: 5px;
+                                                    text-align: center;
+                                                }
+                                            }
+                                        }
+                                        &:nth-child(3){
+                                            height: 100%;
+                                            width: 40%;
+                                            display: flex;
+                                            justify-content: space-between;
+                                            align-items: center;
+                                            flex-direction: column;
+                                            > div{
+                                                width:100%;
+                                                height:45%;
+                                                display: flex;
+                                                justify-content: space-between;
+                                                align-items: center;
+
+                                                &:first-child{
+                                                    flex-direction: row;    
+                                                    width: 90%;
+                                                    
+                                                    button{
+                                                        background-color: var(--accent-color-1);
+                                                        padding: 10px;
+                                                    }
+                                                    > div{
+                                                        width: 20%;
+                                                        padding: 10px 20px;
+                                                        border: 1px solid var(--accent-color-1);
+                                                        p{
+                                                            text-align: center;
+                                                        }
+                                                    }
+                                                }
+                                                &:last-child{
+                                                    width: 90%;
+
+                                                    flex-direction: column;
+                                                    
+                                                    button{
+                                                        width: 100%;
+                                                        height: 90%;
+                                                        padding: 0;
+                                                        border-color: var(--accent-color-1);
+                                                        &.add{
+                                                            border-color: var(--accent-color-1);
+                                                            
+                                                        }
+                                                        &.delete{
+                                                            border-color: red;
+                                                            color: red;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    &.selected{
+                                        border-color: var(--accent-color-1);
+                                        
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
