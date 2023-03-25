@@ -44,14 +44,18 @@ pub fn delete(conn: &mut SqliteConnection, id: i32){
         ))
         .execute(conn)
         .unwrap();
+}
 
-    // let _ = diesel::update(combo_item.find(id))
-    //     .set((
-    //         status.eq(0),
-    //         updatedAt.eq(Utc::now().naive_utc())
-    //     ))
-    //     .execute(conn)
-    //     .unwrap();
+pub fn delete_by_product(conn: &mut SqliteConnection, id: i32){
+    use crate::schema::combo_item::dsl::{combo_item, updatedAt, status, product_id};
+    // delete all combo items that have product_id
+    let _ = diesel::update(combo_item.filter(product_id.eq(id)))
+        .set((
+            status.eq(0),
+            updatedAt.eq(Utc::now().naive_utc())
+        ))
+        .execute(conn)
+        .unwrap();
 }
 
 pub fn get(conn: &mut SqliteConnection, id: i32) -> String{

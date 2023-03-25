@@ -50,7 +50,7 @@ class comboService{
                 }
             })
             combos = await Promise.all(combos)
-
+            console.log(combos)
             return combos
         } catch(e : any) {
             console.log(e)

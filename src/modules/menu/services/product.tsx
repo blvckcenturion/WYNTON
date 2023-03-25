@@ -86,6 +86,7 @@ class productService {
     public static async delete(id : number) {
         try {
             await invoke("delete_product", { id })
+            await invoke("delete_combo_item_by_product", { id })
             toast.success("Producto eliminado de forma exitosa")
         } catch(e : any) {
             displayError(e)

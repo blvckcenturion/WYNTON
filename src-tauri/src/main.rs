@@ -56,6 +56,7 @@ fn main() {
             commands::combo_item::get_combo_item,
             commands::combo_item::get_all_combo_item,
             commands::combo_item::get_all_by_combo_id_combo_item,
+            commands::combo_item::delete_combo_item_by_product,
 
         ])
         .run(tauri::generate_context!())

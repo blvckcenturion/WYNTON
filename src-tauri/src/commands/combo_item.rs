@@ -29,6 +29,12 @@ pub fn delete_combo_item(id : i32, state: tauri::State<AppState>) {
 }
 
 #[tauri::command]
+pub fn delete_combo_item_by_product(id : i32, state: tauri::State<AppState>) {
+    let conn = &mut state.conn.lock().unwrap();
+    services::combo_item::delete_by_product(conn, id)
+}
+
+#[tauri::command]
 pub fn get_combo_item(id : i32, state: tauri::State<AppState>) -> String {
     let conn = &mut state.conn.lock().unwrap();
     services::combo_item::get(conn, id)
