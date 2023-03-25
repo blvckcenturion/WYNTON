@@ -73,7 +73,7 @@ const Combos = () => {
                 <tr key={combo.id}>
                     <td>{ capitalize(combo.denomination)}</td>
                     <td>{combo.price.toFixed(2)} BS</td>
-                    {/* <td>
+                    <td>
                         {combo.products.map((product: any) => {
                             return (
                                 <div key={product.id}>
@@ -82,7 +82,7 @@ const Combos = () => {
                                 </div>
                             )
                         })}
-                    </td> */}
+                    </td>
                     <td>
                         <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => { setCombosEdit(combo);  setShowCombosForm(true)}}>
                             <FontAwesomeIcon icon={faEdit} />
