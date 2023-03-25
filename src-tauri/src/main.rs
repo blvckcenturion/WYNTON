@@ -46,6 +46,7 @@ fn main() {
             commands::combo::create_combo,
             commands::combo::update_combo,
             commands::combo::delete_combo,
+            commands::combo::delete_combo_items,
             commands::combo::get_combo,
             commands::combo::get_all_combo,
             commands::combo::find_by_name_combo,

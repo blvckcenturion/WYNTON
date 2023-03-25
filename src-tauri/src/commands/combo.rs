@@ -37,6 +37,12 @@ pub fn delete_combo(id : i32, state: tauri::State<AppState>) {
 }
 
 #[tauri::command]
+pub fn delete_combo_items(id : i32, state: tauri::State<AppState>) {
+    let conn = &mut state.conn.lock().unwrap();
+    services::combo::delete_combo_items(conn, id)
+}
+
+#[tauri::command]
 pub fn get_combo(id : i32, state: tauri::State<AppState>) -> String {
     let conn = &mut state.conn.lock().unwrap();
     services::combo::get(conn, id)

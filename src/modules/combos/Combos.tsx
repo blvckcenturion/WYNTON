@@ -9,6 +9,7 @@ import comboService from "./services/combo"
 import { toast } from "react-toastify"
 import { invoke } from "@tauri-apps/api"
 import capitalize from "../utils/functions/capitalize"
+import elementSearch from "../utils/functions/elementSearch"
 const Combos = () => {
     const [combosSearchTerm, setCombosSearchTerm] = useState("")
     const [showCombosForm, setShowCombosForm] = useState(false)
@@ -54,8 +55,14 @@ const Combos = () => {
     }
 
 
-    const handleComboSearch = (e : any) => {
+    const handleComboSearch = (e: any) => {
 
+        const comboFilter = (combo: any) => {
+            if (combo.denomination.trim().toLowerCase() == e.target.value.trim().toLowerCase() || combo.denomination.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())) {
+                return combo;
+            }
+        }
+        elementSearch(e, setCombosSearchTerm, setCombosSearch, combos, comboFilter)
     }
 
     const showCombos = (combos: any[]) => {
@@ -77,15 +84,13 @@ const Combos = () => {
                         })}
                     </td>
                     <td>
-                        <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => setCombosEdit(combo)}>
+                        <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => { setCombosEdit(combo);  setShowCombosForm(true)}}>
                             <FontAwesomeIcon icon={faEdit} />
                         </button>
                         <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => { setShowComboDelete(true);  setComboDelete(combo.id)}}>
                             <FontAwesomeIcon icon={faTrash} />
                         </button>
                     </td>
-
-
                 </tr>
             )
         })
@@ -146,26 +151,60 @@ const Combos = () => {
                 </div>
             </div>
             <Modal className={"add-product-modal"} title={combosEdit ? "Editar combo" : "Agregar combo"} showModal={showCombosForm} onClose={() => {setShowCombosForm(false); setCombosEdit(null);} }>
-                <CombosForm combo={combosEdit} products={products} setShowCombosForm={setShowCombosForm} setCombo={setCombosEdit} />
+                <CombosForm combo={combosEdit} combos={combos} products={products} setShowCombosForm={setShowCombosForm} setCombo={setCombosEdit} loadCombos={loadCombos} />
             </Modal>
             <ActionModal title="Eliminar combo" body="¿Esta seguro que desea eliminar este combo?" showModal={showComboDelete} onConfirm={deleteCombo} onCancel={() => setShowComboDelete(false)}/>
         </div>
     )
 }
 
-const CombosForm = ({combo, products, setShowCombosForm, setCombo} : {combo: any | null, products: any[], setShowCombosForm : Function, setCombo: Function}) => { 
+const CombosForm = ({combo, combos, products, setShowCombosForm, setCombo, loadCombos} : {combo: any | null, combos: any[], products: any[], setShowCombosForm : Function, setCombo: Function, loadCombos : Function}) => { 
 
     const [allProducts, setAllProducts] = useState<any>(null)
+    const [showConfirm, setShowConfirm] = useState<boolean>(false)
+    const [comboSave, setComboSave] = useState<any>(null)
+    const [comboUpdated, setComboUpdated] = useState<boolean>(false)
+    const [comboItemsUpdated, setComboItemsUpdated] = useState<boolean>(false)
+    const [productSearch, setProductSearch] = useState<string>("")
+    const [productsFiltered, setProductsFiltered] = useState<any>(null)
+
 
     useEffect(() => {
-        let prods = products.map(p => {
-            p.selected = false
-            p.qty = 1
-            return p
-        })
+        let prods;
+
+        if (combo != null) { 
+            prods = products.map(p => {
+                let selected = combo.products.find((cp: any) => cp.productDetails.id == p.id)
+                if (selected) {
+                    p.selected = true
+                    p.qty = selected.quantity
+                } else {
+                    p.selected = false
+                    p.qty = 1
+                }
+                return p
+            })
+        } else {
+            prods = products.map(p => {
+                p.selected = false
+                p.qty = 1
+                return p
+            })
+        }
+
         setAllProducts(prods)
        
     }, [])
+
+    const handleProductSearch = (e: any) => { 
+        const productFilter = (product: any) => {
+            if(product.name.trim().toLowerCase() === e.target.value.trim().toLowerCase() || product.name.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())){
+              return product;
+            }
+        }
+        
+        elementSearch(e, setProductSearch, setProductsFiltered, allProducts, productFilter)
+    }
 
     const createCombo = useFormik({
         initialValues: {
@@ -194,6 +233,7 @@ const CombosForm = ({combo, products, setShowCombosForm, setCombo} : {combo: any
 
                 if (res) {
                     toast.success("Combo creado con exito")
+                    loadCombos()
                     setShowCombosForm(false)
                 } else {
                     toast.error("No se pudo agregar el combo")
@@ -216,14 +256,58 @@ const CombosForm = ({combo, products, setShowCombosForm, setCombo} : {combo: any
             price: combo?.price || "",
         },
         onSubmit: async (values) => {
-            console.log(values)
+            try {
+                let selectedProducts = getSelectedProducts()
+                let validatedCombo = comboService.comboValidationSchema.parse({ ...values, products: selectedProducts })
+                validatedCombo.denomination = validatedCombo.denomination.toLowerCase()
+
+                let filtered = combos.filter(c => { if (c.denomination.trim().toLowerCase() == validatedCombo.denomination.trim().toLowerCase() && c.id != combo?.id) return c })
+                
+                if (filtered.length > 0) {
+                    throw new Error("Ya existe un combo con esa denominacion")
+                }
+
+                let comboUpdated = combo.denomination != validatedCombo.denomination || combo.price != validatedCombo.price;
+                let comboItemsUpdated = combo.products.length !== selectedProducts.length;
+
+                selectedProducts.forEach((p: any) => { 
+                    let prod = combo?.products.find((cp: any) => cp.productDetails.id == p.id)
+                    if (prod) {
+                        if (prod.quantity != p.qty) {
+                            comboItemsUpdated = true;
+                        }
+                    } else {
+                        comboItemsUpdated = true;
+                    }
+                })
+
+                if ( comboUpdated || comboItemsUpdated) {
+                    if(selectedProducts.length == 0) {
+                        throw new Error("Debe seleccionar al menos un producto")
+                    } else {
+                        setComboSave({ ...validatedCombo, id: combo.id })
+                        setComboUpdated(comboUpdated)
+                        setComboItemsUpdated(comboItemsUpdated)
+                        setShowConfirm(true)
+                    }
+                } else {
+                    setShowCombosForm(false)
+                }
+            } catch(e: any) {
+                console.log(e)
+                if (typeof e.issues !== "undefined"){
+                    toast.error(e.issues[0].message);
+                } else {
+                    toast.error(e.message);
+                }
+            }
+
         }
     })
 
-    const cancelEditProduct = () => {
-        setCombo(null);
+    const cancelEditCombo = () => {
         setShowCombosForm(false);
-
+        setCombo(null);
     }
 
     const handleProductSelect = (product: any) => { 
@@ -255,93 +339,114 @@ const CombosForm = ({combo, products, setShowCombosForm, setCombo} : {combo: any
         return selectedProducts
     }
 
+    const confirmEditCombo = async () => {
+        await comboService.update(comboSave, comboItemsUpdated, comboUpdated)
+        setShowCombosForm(false)
+        loadCombos()
+    }
+
     return (
-        <div>
-            <form onSubmit={combo !== null ? editCombo.handleSubmit : createCombo.handleSubmit }>
-                <div className="mb-1">
-                    <label htmlFor="comboDenomination" className="block text-accent-1 text-sm font-bold mb-2">
-                        {`Denominacion del combo ${combo ? editCombo.values.denomination.length > 0 ? `(${editCombo.values.denomination.length})` : "" : createCombo.values.denomination.length > 0 ? `(${createCombo.values.denomination.length})` : ""}`}
-                    </label>
-                    <input type="text" className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboDenomination" onChange={combo ? editCombo.handleChange("denomination") : createCombo.handleChange("denomination")} value={combo ? editCombo.values.denomination : createCombo.values.denomination} />
-                </div>
-                <div className="mb-1">
-                    <label htmlFor="comboPrice" className="block text-accent-1 text-sm font-bold mb-2">
-                        Precio del combo
-                    </label>
-                    <input type="number" step="0.01"  className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboPrice" onChange={combo ? editCombo.handleChange("price") : createCombo.handleChange("price")} value={combo ? editCombo.values.price : createCombo.values.price} />
-                </div>
-                <div className="mb-1">
-                    <h3 className="text-accent-1">
-                        {`Productos ${combo ? getSelectedProducts().length > 0 ? `(${getSelectedProducts().length})` : "" : getSelectedProducts().length > 0 ? `(${getSelectedProducts().length})` : ""}`}
-                    </h3>
-                    <div className="flex flex-col">
-                        <div id="comboAvailableProducts">
-                            <div>
-                                <label htmlFor="comboAvailableProductsSearch" className="block text-accent-1 text-sm font-bold mb-2">
-                                    Buscar producto
-                                </label>
-                                <input type="text" className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboAvailableProductsSearch" />
-                            </div>
-                            <div>
-                                {
-                                    allProducts && allProducts.map((product : any, index : any) => {
-                                        return (
-                                            <div className={`flex flex-row shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${product.selected ?  "selected" : ""}`} key={index}>
-                                                <div>
-                                                    {product.photo ? <img src={product.photo} alt={product.name} /> : <FontAwesomeIcon icon={faFileImage} />}
-                                                </div>
-                                                <div>
-                                                    <p>{product.name}</p>
-                                                    <p>{product.price.toFixed(2)} BS</p>
-                                                </div>
-                                                <div>
-                                                    <div>
-                                                        <button className="text-white font-bold rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => handleProductQty(product, product.qty-1)}>
-                                                            <FontAwesomeIcon icon={faMinus} />
-                                                        </button>
-                                                        <div className="text-white font-bold rounded focus:outline-none focus:shadow-outline">
-                                                            <p>{product.qty}</p>
-                                                        </div>
-                                                        <button className="text-white font-bold rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => handleProductQty(product, product.qty+1)}>
-                                                            <FontAwesomeIcon icon={faPlus} />
-                                                        </button>
-                                                    </div>
-                                                    <div>
-                                                        {product.selected ? (
-                                                            <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline delete" type="button" onClick={() => handleProductSelect(product)}>
-                                                                Eliminar&nbsp;<FontAwesomeIcon icon={faTrash} />
-                                                            </button>
-                                                        ): (
-                                                            <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline add" type="button" onClick={() => handleProductSelect(product)}>
-                                                            Agregar&nbsp;<FontAwesomeIcon icon={faPlus} />
-                                                            </button>
-                                                        )}
-                                                        
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                }
+        <>
+            <div>
+                <form onSubmit={combo !== null ? editCombo.handleSubmit : createCombo.handleSubmit }>
+                    <div className="mb-1">
+                        <label htmlFor="comboDenomination" className="block text-accent-1 text-sm font-bold mb-2">
+                            {`Denominacion del combo ${combo ? editCombo.values.denomination.length > 0 ? `(${editCombo.values.denomination.length})` : "" : createCombo.values.denomination.length > 0 ? `(${createCombo.values.denomination.length})` : ""}`}
+                        </label>
+                        <input type="text" className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboDenomination" onChange={combo ? editCombo.handleChange("denomination") : createCombo.handleChange("denomination")} value={combo ? editCombo.values.denomination : createCombo.values.denomination} />
+                    </div>
+                    <div className="mb-1">
+                        <label htmlFor="comboPrice" className="block text-accent-1 text-sm font-bold mb-2">
+                            Precio del combo
+                        </label>
+                        <input type="number" step="0.01"  className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboPrice" onChange={combo ? editCombo.handleChange("price") : createCombo.handleChange("price")} value={combo ? editCombo.values.price : createCombo.values.price} />
+                    </div>
+                    <div className="mb-1">
+                        <h3 className="text-accent-1">
+                            {`Productos ${combo ? getSelectedProducts().length > 0 ? `(${getSelectedProducts().length})` : "" : getSelectedProducts().length > 0 ? `(${getSelectedProducts().length})` : ""}`}
+                        </h3>
+                        <div className="flex flex-col">
+                            <div id="comboAvailableProducts">
+                                <div>
+                                    <input placeholder="Buscar productos" type="text" className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboAvailableProductsSearch" value={productSearch} onChange={handleProductSearch} />
+                                </div>
+                                <div>
+                                    {
+                                        allProducts && productSearch.length == 0 && allProducts.map((product : any, index : number) => {
+                                            return (<ProductCard index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
+                                        })
+                                    }
+                                    {
+                                        allProducts && productSearch.length > 0 && productsFiltered.filter((p: any) => p.name.toLowerCase().includes(productSearch.toLowerCase())).map((product: any, index: number) => {
+                                            return (<ProductCard index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
+                                        })
+                                    }
+
+                                    {
+                                        allProducts && productSearch.length > 0 && productsFiltered.filter((p: any) => p.name.toLowerCase().includes(productSearch.toLowerCase())).length == 0 && <div className="not-found text-center">No se encontraron productos con el nombre "{productSearch}"</div>
+                                    }
+
+                                </div>
                             </div>
                         </div>
+                        
                     </div>
                     
+                    <div className="flex flex-row form-submit">
+                    <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    <FontAwesomeIcon icon={faSave} />
+                    &nbsp;{combo ? "Guardar" : "Agregar"}
+                    </button>
+                    <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={cancelEditCombo}>
+                    <FontAwesomeIcon icon={faCancel} />
+                    &nbsp;Cancelar
+                    </button>
                 </div>
-                
-                <div className="flex flex-row form-submit">
-                <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
-                  <FontAwesomeIcon icon={faSave} />
-                  &nbsp;{combo ? "Guardar" : "Agregar"}
-                </button>
-                <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={cancelEditProduct}>
-                  <FontAwesomeIcon icon={faCancel} />
-                  &nbsp;Cancelar
-                </button>
-              </div>
-            </form>
-        </div>
+                </form>
+            </div>
+            <ActionModal title={"Guardar cambios"} body={"¿Estas seguro de guardar los cambios?"} showModal={showConfirm} onConfirm={confirmEditCombo} onCancel={() => { setShowConfirm(false); setComboUpdated(false); setComboItemsUpdated(false); }} className={"confirm-modal"} />
+        </>
     )
+}
+
+const ProductCard = ({ product, index, handleProductQty, handleProductSelect }: { product: any, index : number, handleProductQty : Function, handleProductSelect : Function }) => { 
+    return (
+        <div className={`flex flex-row shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${product.selected ?  "selected" : ""}`} key={index}>
+        <div>
+            {product.photo ? <img src={product.photo} alt={product.name} /> : <FontAwesomeIcon icon={faFileImage} />}
+        </div>
+        <div>
+            <p>{product.name}</p>
+            <p>{product.price.toFixed(2)} BS</p>
+        </div>
+        <div>
+            <div>
+                <button className="text-white font-bold rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => handleProductQty(product, product.qty-1)}>
+                    <FontAwesomeIcon icon={faMinus} />
+                </button>
+                <div className="text-white font-bold rounded focus:outline-none focus:shadow-outline">
+                    <p>{product.qty}</p>
+                </div>
+                <button className="text-white font-bold rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => handleProductQty(product, product.qty+1)}>
+                    <FontAwesomeIcon icon={faPlus} />
+                </button>
+            </div>
+            <div>
+                {product.selected ? (
+                    <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline delete" type="button" onClick={() => handleProductSelect(product)}>
+                        Eliminar&nbsp;<FontAwesomeIcon icon={faTrash} />
+                    </button>
+                ): (
+                    <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline add" type="button" onClick={() => handleProductSelect(product)}>
+                    Agregar&nbsp;<FontAwesomeIcon icon={faPlus} />
+                    </button>
+                )}
+                
+            </div>
+        </div>
+    </div>
+    )
+    
 }
 
 export default Combos

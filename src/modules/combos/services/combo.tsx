@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api"
+import { toast } from "react-toastify"
 import { z } from "zod"
 import displayError from "../../utils/functions/displayError"
 class comboService{
@@ -67,6 +68,29 @@ class comboService{
             console.log(e)
             displayError(e)
             return false
+        }
+    }
+
+    public static async update(combo: any, updateItems: boolean, updateCombo: boolean) { 
+        try {
+            console.log(combo)
+            let response : any = null
+            if (updateCombo) {
+                console.log(combo.price)
+                const response : any = await invoke("update_combo", {id: combo.id, denomination: combo.denomination, price: combo.price})
+            }
+            if (updateItems) { 
+                await invoke("delete_combo_item", { id: combo.id })
+                combo.products.forEach(async (product: any) => { 
+                    let prod = {comboId: combo.id, productId: product.id, quantity: product.qty}
+                    await invoke("create_combo_item", prod)
+                })
+            }
+            toast.success("Combo actualizado correctamente")
+        } catch (e: any) {
+            console.log(e)
+            displayError(e)
+            return null
         }
     }
 }
