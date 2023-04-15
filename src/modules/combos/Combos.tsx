@@ -22,7 +22,6 @@ const Combos = () => {
 
     useEffect(() => {
         (async () => {
-            
             await loadCombos()
         })();
 
@@ -76,12 +75,18 @@ const Combos = () => {
                     <td>
                         {combo.products.map((product: any) => {
                             return (
-                                <div key={product.id}>
+                                <div key={product.id}> 
                                     <span>{product.productDetails.name}</span>
                                     <span className="text-accent-1"> x{product.quantity}</span>
                                 </div>
                             )
                         })}
+                    </td>
+                    <td>
+                        {combo.products.reduce((acc: number, product: any) => {
+                            return acc + (product.productDetails.price * product.quantity)
+                        }, 0).toFixed(2
+                        )} BS
                     </td>
                     <td>
                         <button className="text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => { setCombosEdit(combo);  setShowCombosForm(true)}}>
@@ -122,7 +127,7 @@ const Combos = () => {
                 <div className="table item-table">
                     {combos.length == 0 && combosSearch == null && (
                         <div className="text-center">
-                            <p>No hay combos disponibles.</p>
+                            <p>No existen combos registrados.</p>
                         </div>
                     )}
                     {combosSearch != null && combosSearch.length == 0 && (
@@ -137,14 +142,15 @@ const Combos = () => {
                             <th>Denominacion&nbsp;</th>
                             <th>Precio&nbsp;</th>
                             <th>Productos</th>
+                            <th>Valor Sumado&nbsp;</th>        
                             <th>Acciones</th>        
                         </tr>
                         </thead>
-                            <tbody>
-                                <>
-                                    {combos != null && combosSearch == null && showCombos(combos)}
-                                    {combosSearch != null && showCombos(combosSearch)}
-                                </>
+                        <tbody>
+                            <>
+                                {combos != null && combosSearch == null && showCombos(combos)}
+                                {combosSearch != null && showCombos(combosSearch)}
+                            </>
                         </tbody>
                     </table>
                     )}
@@ -342,6 +348,7 @@ const CombosForm = ({combo, combos, products, setShowCombosForm, setCombo, loadC
     const confirmEditCombo = async () => {
         await comboService.update(comboSave, comboItemsUpdated, comboUpdated)
         setShowCombosForm(false)
+        setCombo(null)
         loadCombos()
     }
 
@@ -357,7 +364,7 @@ const CombosForm = ({combo, combos, products, setShowCombosForm, setCombo, loadC
                     </div>
                     <div className="mb-1">
                         <label htmlFor="comboPrice" className="block text-accent-1 text-sm font-bold mb-2">
-                            Precio del combo
+                            {`Precio del combo ${getSelectedProducts().length > 0 ? `(Sugerido: ${getSelectedProducts().reduce((acc: any, curr: any) => { return parseFloat(acc) + (parseFloat(curr.price )* parseFloat(curr.qty))},0).toFixed(2) })` : ''}`}
                         </label>
                         <input type="number" step="0.01"  className="shadow appareance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="comboPrice" onChange={combo ? editCombo.handleChange("price") : createCombo.handleChange("price")} value={combo ? editCombo.values.price : createCombo.values.price} />
                     </div>
@@ -373,12 +380,12 @@ const CombosForm = ({combo, combos, products, setShowCombosForm, setCombo, loadC
                                 <div>
                                     {
                                         allProducts && productSearch.length == 0 && allProducts.map((product : any, index : number) => {
-                                            return (<ProductCard index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
+                                            return (<ProductCard key={index} index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
                                         })
                                     }
                                     {
                                         allProducts && productSearch.length > 0 && productsFiltered.filter((p: any) => p.name.toLowerCase().includes(productSearch.toLowerCase())).map((product: any, index: number) => {
-                                            return (<ProductCard index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
+                                            return (<ProductCard key={index} index={index} product={product} handleProductSelect={handleProductSelect} handleProductQty={handleProductQty} />)
                                         })
                                     }
 

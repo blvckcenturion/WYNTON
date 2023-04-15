@@ -57,7 +57,14 @@ fn main() {
             commands::combo_item::get_all_combo_item,
             commands::combo_item::get_all_by_combo_id_combo_item,
             commands::combo_item::delete_combo_item_by_product,
-
+            commands::user::create_user,
+            commands::user::update_user,
+            commands::user::delete_user,
+            commands::user::get_user,
+            commands::user::get_all_user,
+            commands::user::login_user,
+            commands::user::update_password_user,
+            commands::user::find_by_id_user,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -15,6 +15,7 @@ import elementSearch from '../../utils/functions/elementSearch'
 import ActionModal from '../../utils/components/actionModal'
 import productService from '../services/product'
 import categoryService from '../services/category'
+import comboService from '../../combos/services/combo'
 
 
 // Main component for the products section 
@@ -26,11 +27,11 @@ const Products = () => {
   const [productSearchTerm, setProductSearchTerm] = useState<string>("");
   const [showProductForm, setShowProductForm] = useState<boolean>(false);
   const [showProductDelete, setShowProductDelete] = useState<boolean>(false);
+  const [showProductComboDelete, setShowProductComboDelete] = useState<boolean>(false);
+  const [comboCount, setComboCount] = useState<number>(0);
   const [productDelete, setProductDelete] = useState<number | null>(null);
   const [productEdit, setProductEdit] = useState<object | null>(null);
   const [products, setProducts] = useState<any[]>([]);
-  const [orderBy, setOrderBy] = useState<string>("name");
-  const [orderAsc, setOrderAsc] = useState<boolean>(true);
 
   // Products Section On Mount Function
   useEffect(() => {
@@ -43,7 +44,7 @@ const Products = () => {
   
   // Helper function to Load all the active products from the backend and set the state
   const loadProducts = async () => {
-    const products : any[] = await productService.load(orderBy, orderAsc ? "asc" : "desc");
+    const products : any[] = await productService.load();
     setProducts(products);
   }
 
@@ -93,11 +94,27 @@ const Products = () => {
     })
   }
 
-  // Invoker function to set a product's status as deleted
-  const deleteProduct = async () => {
+  const deleteProduct = async () => { 
     if (productDelete !== null) await productService.delete(productDelete)
+    setProductDelete(null)
     await loadProducts()
+  }
+
+  // Invoker function to set a product's status as deleted
+  const handleDeleteProduct = async () => {
+    const combos = await comboService.searchByProduct(productDelete)
+    if (combos && combos.length > 0) { 
+      setComboCount(combos.length)
+      setShowProductComboDelete(true)
+    } else {
+      await deleteProduct()
+    }
     setShowProductDelete(false)
+  }
+
+  const handleDeleteProductCombo = async () => {
+    await deleteProduct()
+    setShowProductComboDelete(false)
   }
 
   return (
@@ -120,7 +137,7 @@ const Products = () => {
           <div className='table item-table'>
             {products.length == 0 && productSearch == null && (
               <div className="text-center">
-                <p>No hay productos registrados.</p>
+                <p>No existen productos registrados.</p>
               </div>
             )}
 
@@ -152,7 +169,8 @@ const Products = () => {
       <Modal className={"add-product-modal"} title={productEdit ? "Editar producto" : "Agregar producto"} showModal={showProductForm} onClose={() => {setShowProductForm(false); setProductEdit(null);} }>
         <ProductForm products={products} product={productEdit} loadProducts={loadProducts} categories={categories} setShowProductForm={setShowProductForm} setProduct={setProductEdit}/>
       </Modal>
-      <ActionModal title="Eliminar producto" body="¿Esta seguro que desea eliminar este producto?" showModal={showProductDelete} onConfirm={deleteProduct} onCancel={() => setShowProductDelete(false)}/>
+      <ActionModal title="Eliminar producto" body="¿Esta seguro que desea eliminar este producto?" showModal={showProductDelete} onConfirm={handleDeleteProduct} onCancel={() => setShowProductDelete(false)} />
+      <ActionModal title="Alerta!" body={`El producto es parte de ${comboCount} ${comboCount > 1 ? "combos" : "combo"} y sera eliminado ${comboCount > 1 ? "de los mismos" : "del mismo"} ¿Desea proceder de todas formas?`} showModal={showProductComboDelete} onConfirm={handleDeleteProductCombo} onCancel={() => setShowProductComboDelete(false)}/>
     </>
   )
 }
@@ -246,7 +264,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
           setProductSave(prod);
           setShowConfirm(true);
         } else {
-          setShowProductForm(false);
+          cancelEditProduct();
         }
         
       } catch (e: any) {
@@ -270,8 +288,6 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
           { name: 'Image', extensions: ['jpg', 'png', 'jpeg'] }
         ]
       });
-      console.log(res)
-      console.log(convertFileSrc(res));
       if(res == null) {
         setPhoto("");
         setPhotoSrc("");
@@ -298,10 +314,12 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     } else {
       prod.photo = null;
     }
+    console.log(prod)
     await productService.update({id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: photoReplaced ? prod.photo : product.photo_path})
 
     loadProducts();
     setShowProductForm(false);
+    setProduct(null);
   }
 
   // Helper function to close the modal in case of cancelation
@@ -309,7 +327,6 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     setShowProductForm(false);
     setProduct(null);
   }
-
 
   return (
     <>

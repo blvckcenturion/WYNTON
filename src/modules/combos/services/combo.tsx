@@ -50,7 +50,14 @@ class comboService{
                 }
             })
             combos = await Promise.all(combos)
-            console.log(combos)
+            combos = combos.map(c => {
+                if (c.products.length > 0) {
+                    return c
+                } else {
+                    this.delete(c.id)
+                    return null
+                }
+            }).filter(c => c !== null)
             return combos
         } catch(e : any) {
             console.log(e)
@@ -87,6 +94,19 @@ class comboService{
                 })
             }
             toast.success("Combo actualizado correctamente")
+        } catch (e: any) {
+            console.log(e)
+            displayError(e)
+            return null
+        }
+    }
+
+    public static async searchByProduct(id: any) {
+        try {
+            const combos = await this.load()
+            return combos.filter((combo : any) => {
+                return combo.products.find((product: any) => { return product.product_id === id})
+            })
         } catch (e: any) {
             console.log(e)
             displayError(e)

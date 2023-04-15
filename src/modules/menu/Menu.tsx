@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Categories from "./sections/Categories";
-import Combos from "./sections/Combos";
 import Products from "./sections/Products";
 import ViewMenu from "./sections/ViewMenu";
 

@@ -7,6 +7,7 @@ import Modal from "../../utils/components/modal"
 import categoryService from "../services/category"
 import { ProductForm } from "./Products"
 import { CategoryForm } from "./Categories"
+import comboService from "../../combos/services/combo"
 
 // Main component for the menu section
 const ViewMenu = () => {
@@ -15,13 +16,14 @@ const ViewMenu = () => {
     const [categories, setCategories] = useState<any[]>([])
     const [products, setProducts] = useState<any[]>([])
     const [productDelete, setProductDelete] = useState<any | number>(null)
+    const [showProductComboDelete, setShowProductComboDelete] = useState<boolean>(false);
     const [productEdit, setProductEdit] = useState<any>(null)
     const [categoryDelete , setCategoryDelete] = useState<any | number>(null)
     const [categoryEdit, setCategoryEdit] = useState<any>(null)
     const [showModalDelete, setShowModalDelete] = useState<boolean>(false)
     const [showModalEdit, setShowModalEdit] = useState<boolean>(false)
     const [toggledCategories, setToggledCategories] = useState<any[]>([])
-
+    const [comboCount, setComboCount] = useState<number>(0);
 
     
     // Products Section On Mount Function
@@ -48,11 +50,22 @@ const ViewMenu = () => {
     }
 
     // Helper function to delete a product from the backend and update the state
-    const deleteProduct = async () => {
-        await productService.delete(productDelete)
+    const deleteProduct = async () => { 
+        if (productDelete !== null) await productService.delete(productDelete)
         setProductDelete(null)
-        setShowModalDelete(false)
         await loadCategories()
+    }
+
+
+    const handleDeleteProduct = async () => {
+        const combos = await comboService.searchByProduct(productDelete)
+        if (combos && combos.length > 0) { 
+            setComboCount(combos.length)
+            setShowProductComboDelete(true)
+        } else {
+            await deleteProduct()
+        }
+        setShowModalDelete(false)
     }
 
     // Helper function to delete a category from the backend and update the state
@@ -63,6 +76,11 @@ const ViewMenu = () => {
         await loadCategories()
     }
 
+    const handleDeleteProductCombo = async () => {
+        await deleteProduct()
+        setShowProductComboDelete(false)
+    }
+
 
 
     const renderCategories = () => {
@@ -70,7 +88,7 @@ const ViewMenu = () => {
         if(categories.length == 1 && categories[0].products.length == 0) 
         return (
             <div className="empty">
-                <p>No hay productos <br /> ni categorias registradas.</p>
+                <p>No existen productos <br /> ni categorias registradas.</p>
             </div>
         )
 
@@ -79,7 +97,7 @@ const ViewMenu = () => {
             return (
                 <div key={category.id} className="category">
                     <div>
-                        <h3 onClick={() => setToggledCategories({...toggledCategories, [category.name] : !toggledCategories[category.name]})}>{category.name}{` (${category.products.length})`}&nbsp;&nbsp;&nbsp;{category.products.length > 0 ? <FontAwesomeIcon icon={toggledCategories[category.name] ? faAngleUp : faAngleDown} /> : null}</h3>
+                        <h3 onClick={() => setToggledCategories({...toggledCategories, [category.name] : !toggledCategories[category.name]})}>{category.name}{` (${category.products.length})`}&nbsp;&nbsp;&nbsp;{category.products.length > 0 ? <FontAwesomeIcon icon={toggledCategories[category.name] ? faAngleDown : faAngleUp} /> : null}</h3>
                         <div>
                             {category.id && (
                                 <>
@@ -140,7 +158,7 @@ const ViewMenu = () => {
             <div className="view-menu-section"> 
                 {renderCategories()}
             </div>
-            <ActionModal title={productDelete ? "Eliminar producto" : "Eliminar categoria"} body={productDelete ? "¿Esta seguro que desea eliminar este producto?" : "¿Esta seguro que desea eliminar esta categoria?"} showModal={showModalDelete} onCancel={() => {setShowModalDelete(false); productDelete ? setProductDelete(null) : setCategoryDelete(null)}} onConfirm={productDelete ? deleteProduct : deleteCategory} />
+            <ActionModal title={productDelete ? "Eliminar producto" : "Eliminar categoria"} body={productDelete ? "¿Esta seguro que desea eliminar este producto?" : "¿Esta seguro que desea eliminar esta categoria?"} showModal={showModalDelete} onCancel={() => {setShowModalDelete(false); productDelete ? setProductDelete(null) : setCategoryDelete(null)}} onConfirm={productDelete ? handleDeleteProduct : deleteCategory} />
             <Modal className={productEdit ? "add-product-modal" : "add-category-modal"} title={productEdit ? "Editar producto" : "Editar categoria"} showModal={showModalEdit} onClose={() => {setShowModalEdit(false); productEdit ? setProductEdit(null) : setCategoryEdit(null)}} >
                 {productEdit ? (
                     <ProductForm categories={categories} setShowProductForm={setShowModalEdit} loadProducts={loadCategories} product={productEdit} products={products} setProduct={setProductEdit}/>
@@ -148,6 +166,7 @@ const ViewMenu = () => {
                     <CategoryForm setShowCategoryForm={setShowModalEdit} loadCategories={loadCategories} category={categoryEdit} categories={categories} setCategory={setCategoryEdit}/>
                 )}
             </Modal>
+            <ActionModal title="Alerta!" body={`El producto es parte de ${comboCount} ${comboCount > 1 ? "combos" : "combo"} y sera eliminado ${comboCount > 1 ? "de los mismos" : "del mismo"} ¿Desea proceder de todas formas?`} showModal={showProductComboDelete} onConfirm={handleDeleteProductCombo} onCancel={() => setShowProductComboDelete(false)}/>
         </>
     )
 }

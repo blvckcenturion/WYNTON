@@ -1,4 +1,5 @@
 -- Your SQL goes here
+-- Your SQL goes here
 CREATE TABLE combo (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     denomination VARCHAR(100) NOT NULL,

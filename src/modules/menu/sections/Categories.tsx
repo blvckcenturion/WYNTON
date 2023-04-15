@@ -99,7 +99,7 @@ const Categories = () => {
         <div className="table item-table">
           {categories.length == 0 && categorySearch == null && (
             <div>
-              <p>No hay categorias registradas.</p>
+              <p>No existen categorias registradas.</p>
             </div>
           )}
           {categorySearch != null && categorySearch.length == 0 && (
@@ -205,6 +205,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
     await loadCategories();
     setShowConfirm(false);
     setShowCategoryForm(false);
+    setCategory(null);
   }
 
   // Helper function to close the modal in case of cancelation

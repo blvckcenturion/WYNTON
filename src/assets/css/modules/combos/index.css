@@ -5,11 +5,9 @@
         thead{
             th{
                 width: 15%;
-                &:nth-child(1){
-                    width: 20%;
-                }
+                
                 &:nth-child(3){
-                    width: 40%;
+                    width: 30%;
                 }
             }
         }
@@ -25,7 +23,7 @@
                             gap: 1px;
                             &:not(:last-child){
                                 /* margin-bottom: 5px; */
-                                border-bottom: 1px solid var(--accent-color-1);
+                                border-bottom: 1px solid var(--main-color);
                             }
                             > div{
                                 &:nth-child(1){

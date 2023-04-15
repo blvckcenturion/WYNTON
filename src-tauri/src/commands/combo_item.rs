@@ -14,7 +14,7 @@ pub fn create_combo_item(combo_id : i32, product_id : i32, quantity : i32, state
 }
 
 #[tauri::command]
-pub fn update_combo_item(id : i32, combo_id : i32, product_id : i32, quantity : i32, state: tauri::State<AppState>) {
+pub fn update_combo_item(id : i32, quantity : i32, state: tauri::State<AppState>) {
     let conn = &mut state.conn.lock().unwrap();
     let item = ComboItemUpdate {
         quantity: &quantity

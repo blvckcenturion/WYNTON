@@ -7,6 +7,7 @@
 @import "./modules/auth/index.css";
 @import "./modules/utils/index.css";
 @import "./modules/combos/index.css";
+@import "./modules/auth/index.css";
 
 @tailwind base; 
 @tailwind components; 
@@ -249,15 +250,30 @@ input, select, textarea{
 }
 
 form{
+
   textarea {
     resize: none;
   }
 
   > div{
+    &:last-of-type{
+      @apply flex;
+      @apply flex-row;
+      @apply form-submit;
+    }
+
+    @apply mb-1;
     width: 70%;
     @media screen and (min-width: 1600px){
       width: 50%;
     }
+    input, select, textarea{
+      @apply w-full;
+      @apply py-2;
+      @apply px-3;
+      @apply leading-tight; 
+    }
+
     input{
       height: 5vh;
     }
@@ -280,6 +296,11 @@ form{
     }
 
     > label {
+      @apply text-accent-1;
+      @apply font-bold; 
+      @apply text-sm;
+      @apply block;
+      @apply mb-2;
       > span {
         transition: all 0.5s ease-in-out;
         &:hover{
@@ -328,6 +349,10 @@ form{
 }
 
 div.item-table {
+  -webkit-user-select: auto; /* Safari */        
+  -moz-user-select: auto; /* Firefox */
+  -ms-user-select: auto; /* IE10+/Edge */
+  user-select: auto; /* Standard */
   > div{
     width: 100%;
     height: 100%;
@@ -429,4 +454,99 @@ div.item-table {
     }
     font-size: .9rem;
   }
+}
+
+.modal{
+  .photo {
+    &.active {
+        height: 20vh;
+        > div {
+            transition: inherit;
+            border-color: transparent;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: row;
+            > div{
+                height: 100%;
+                transition: inherit;
+                
+                &:nth-child(1){
+                    background-color: var(--bg-accent);
+                    width: 60%;
+                    padding: 5px;
+                    img{
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                }
+                &:nth-child(2){
+                    width: 35%;
+                    display: flex;
+                    flex-direction: column;
+                    transition: all 0.5s ease-in-out;
+                    justify-content: space-between;
+                    button{
+                        background-color: var(--bg-accent);
+                        transition: all 0.5s ease-in-out;
+                        width: 100%;
+                        height: 45%;
+                        &:hover{
+                            @apply shadow-lg;
+                            border: 1px solid transparent;
+                        }
+                        svg{
+                            transition: inherit;
+                        }
+                        &.active{
+                            transition: inherit;
+                            animation: expand 0.5s ease-in-out;
+                        }
+
+                        @keyframes expand {
+                            0% {
+                                opacity: 0;
+                            }
+                            100% {
+                                opacity: 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    &.non-active{
+        height: 5.5vh;
+        > div{
+            border-color: transparent;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            background-color: var(--bg-accent);
+            transition: inherit;
+            &:hover{
+                @apply shadow-lg;
+            }
+        }
+    }
+    background-color: transparent;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    transition: all 0.5s ease-in-out;
+    
+    /* &:hover{
+        @apply shadow-lg;
+    } */
+    svg{
+        padding:0 10px;
+    }
+}
 }

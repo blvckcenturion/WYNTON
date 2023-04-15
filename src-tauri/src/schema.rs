@@ -47,9 +47,26 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    user (id) {
+        id -> Integer,
+        names -> Text,
+        last_names -> Text,
+        username -> Text,
+        password -> Text,
+        photo -> Nullable<Text>,
+        user_type -> Integer,
+        user_reference -> Nullable<Text>,
+        createdAt -> Timestamp,
+        updatedAt -> Nullable<Timestamp>,
+        status -> Integer,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     category,
     combo,
     combo_item,
     product,
+    user,
 );
