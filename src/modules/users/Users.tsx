@@ -212,6 +212,8 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
         if (user && user.photo) {
             setPhoto(user.photo)
             setPhotoSrc(user.photo)
+            // Usuario: peloculo168987
+            // Contraseña: fcCBhJpqJJ72
         }
     }, [])
 
