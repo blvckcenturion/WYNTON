@@ -104,8 +104,9 @@ const Dashboard = () => {
                     }
                     const updatedUser = await authService.updateUserPassword(user.id, l.password);
                     if (updatedUser) {
-                        toast.success("Contraseña actualizada correctamente.");
-                        setShowPasswordUpdate(false);
+                        toast.success("Contraseña actualizada correctamente, vuelva a iniciar sesión.");
+                        localStorage.removeItem("userId");
+                        router.push("/");
                     }
 
 

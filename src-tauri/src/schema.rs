@@ -1,4 +1,7 @@
 // @generated automatically by Diesel CLI.
+// Aclaration for status:
+// 0: Deleted
+// 1: Active
 
 diesel::table! {
     category (id) {

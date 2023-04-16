@@ -12,7 +12,7 @@ function Login() {
   useEffect(() => { 
     const user = localStorage.getItem("userId")
     if (user) {
-      router.push("/dashboard/")
+      localStorage.removeItem("userId")
     }
   }, [])
 //Usuario: danigaydangly168686
