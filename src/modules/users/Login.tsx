@@ -4,12 +4,15 @@ import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import authService from "./services/auth";
 import { useEffect } from "react";
-
+import userLogService from "./services/userLog";
+import bcrypt from "bcryptjs";
 function Login() {
     
     const router = useRouter();
 
   useEffect(() => { 
+    let pass = bcrypt.hashSync("sexoman", 10)
+    console.log(pass)
     const user = localStorage.getItem("userId")
     if (user) {
       localStorage.removeItem("userId")
@@ -21,7 +24,7 @@ function Login() {
     const login = useFormik({
         initialValues: {
           username: "admin",
-          password: "sexoman1",
+          password: "sexoman",
         },
         onSubmit: async (values) => {
           try {
@@ -31,7 +34,10 @@ function Login() {
             
             if (user) { 
               localStorage.setItem("userId", user.id);
-              router.push("/dashboard/");
+              let log = await userLogService.createLog(user.id)
+              if (log) {
+                router.push("/dashboard/");
+              }
             } else {
               throw new Error("El usuario o la contraseña son incorrectos.");
             }

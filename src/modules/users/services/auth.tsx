@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { toast } from "react-toastify";
 import { exists } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import userLogService from "./userLog";
 
 class authService {
 
@@ -188,6 +189,7 @@ class authService {
     public static async logout(router : any) { 
         try {
             localStorage.removeItem("userId");
+            await userLogService.finishLog();
             router.push("/");
         } catch (e: any) {
             displayError(e);

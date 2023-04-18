@@ -17,14 +17,16 @@ pub mod services;
 pub mod commands;
 
 pub struct AppState {
-    conn: Mutex<SqliteConnection>
+    conn: Mutex<SqliteConnection>,
+    current_user_session: Mutex<i32>,
 }
 
 
 fn main() {
 
     let state = AppState {
-        conn: Mutex::new(db::establish_connection())
+        conn: Mutex::new(db::establish_connection()),
+        current_user_session: Mutex::new(-1),
     };
 
     tauri::Builder::default()
@@ -65,6 +67,9 @@ fn main() {
             commands::user::login_user,
             commands::user::update_password_user,
             commands::user::find_by_id_user,
+            commands::user_log::create_user_log,
+            commands::user_log::update_user_log,
+            commands::user_log::get_all_user_logs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

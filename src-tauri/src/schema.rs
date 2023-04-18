@@ -1,7 +1,4 @@
 // @generated automatically by Diesel CLI.
-// Aclaration for status:
-// 0: Deleted
-// 1: Active
 
 diesel::table! {
     category (id) {
@@ -66,10 +63,22 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    user_log (id) {
+        id -> Integer,
+        user_id -> Integer,
+        login_time -> Timestamp,
+        logout_time -> Nullable<Timestamp>,
+    }
+}
+
+diesel::joinable!(user_log -> user (user_id));
+
 diesel::allow_tables_to_appear_in_same_query!(
     category,
     combo,
     combo_item,
     product,
     user,
+    user_log,
 );
