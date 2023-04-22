@@ -6,8 +6,10 @@
 #[macro_use]
 extern crate diesel;
 
-use std::{sync::Mutex};
+use std::{sync::Mutex, borrow::Borrow};
 use diesel::SqliteConnection;
+use tauri::RunEvent;
+use tauri::Manager;
 
 
 pub mod schema;
@@ -71,6 +73,22 @@ fn main() {
             commands::user_log::update_user_log,
             commands::user_log::get_all_user_logs,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run( move |app_handle, event| match event {
+            RunEvent::ExitRequested { .. } => {
+                // Access app state, check if current_user_session is not -1 and if so, create a user log
+                let app_state = app_handle.state::<AppState>();
+                let current_user_session = app_state.current_user_session.lock().unwrap();
+
+                if *current_user_session != -1 {
+                    // Execute the update_user_log command
+
+                    services::user_log::update(&mut app_state.conn.lock().unwrap(), &models::user_log::UserLogUpdate {
+                        id: &*current_user_session,
+                    });
+                }
+            }
+            _ => {}
+        });
 }
