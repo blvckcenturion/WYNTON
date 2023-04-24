@@ -6,7 +6,7 @@ use chrono::prelude::*;
 pub fn create(conn: &mut SqliteConnection, item: &UserLogNew) -> i32{
     use crate::schema::user_log;
 
-    let u_log = diesel::insert_into(user_log::table)
+    let _ = diesel::insert_into(user_log::table)
         .values(item)
         .execute(conn)
         .expect("Error");

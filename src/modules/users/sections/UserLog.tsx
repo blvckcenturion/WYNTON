@@ -2,6 +2,8 @@ import { faAdd } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState } from "react"
 import userLogService from "../services/userLog"
+import capitalize from "../../utils/functions/capitalize"
+import convertUTCDateToLocalDate from "../../utils/functions/convertUTCDateToLocalDate"
 
 const UserLog = () => {
 
@@ -12,8 +14,8 @@ const UserLog = () => {
     useEffect(() => {
         (async () => {
             await loadUserLogs()
-        })
-    })
+        })()
+    },[])
 
     const loadUserLogs = async () => {
         const users: any[] = await userLogService.load()
@@ -22,20 +24,38 @@ const UserLog = () => {
 
     const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => { 
         setUserSearchTerm(e.target.value)
+        if (e.target.value === "") {
+            setUserLogSearch(null)
+        } else {
+            // Usuario: perromantaorellana168141
+            // Contraseña: MziuJ62EjWbm
+            const search = userLogs.filter((userLog: any) => {
+                let fullName = `${userLog.names} ${userLog.last_names}`
+                return fullName.toLowerCase().includes(e.target.value.toLowerCase()) || userLog.username.toLowerCase().includes(e.target.value.toLowerCase())
+            })
+            setUserLogSearch(search)
+        }
     }    
 
     const showUserLogs = (userLogs: any[]) => {
         return userLogs.map((userLog: any) => { 
-            return (
-                <tr>
-                    <h1>aaa</h1>
-                    {/* <td>{userLog.name}</td>
-                    <td>{userLog.username}</td>
-                    <td>{userLog.userType}</td>
-                    <td>{userLog.loginDate}</td>
-                    <td>{userLog.logoutDate}</td> */}
-                </tr>
-            )
+            if (userLog.logout_time !== null) { 
+
+                return (
+                    <tr>
+                        <td>{capitalize(userLog.names)} {capitalize(userLog.last_names)}</td>
+                        <td>{userLog.username}</td>
+                        <td>{convertUTCDateToLocalDate(new Date(userLog.login_time)).toLocaleString()}</td>
+                        <td>{convertUTCDateToLocalDate(new Date(userLog.logout_time)).toLocaleString()}</td>
+                        
+                        {/* <td>{userLog.name}</td>
+                        <td>{userLog.username}</td>
+                        <td>{userLog.userType}</td>
+                        <td>{userLog.loginDate}</td>
+                        <td>{userLog.logoutDate}</td> */}
+                    </tr>
+                )
+            }
         })
     }
 
@@ -67,7 +87,6 @@ const UserLog = () => {
                             <tr>
                                 <th>Nombre</th>
                                 <th>Usuario</th>
-                                <th>Tipo de Usuario</th>
                                 <th>Fecha/Hora inicio de Sesion</th>
                                 <th>Fecha/Hora fin de Sesion</th>
                             </tr>

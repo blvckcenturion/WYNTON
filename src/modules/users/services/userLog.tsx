@@ -35,6 +35,7 @@ class userLogService{
         try {
             let response: any = await invoke("get_all_user_logs");
             response = await JSON.parse(response);
+            console.log(response)
             return response;
         } catch (e: any) {
             displayError(e);
