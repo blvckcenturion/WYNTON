@@ -4,10 +4,24 @@ import { config } from '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useEffect } from "react";
 config.autoAddCss = false
 
 // This default export is required in a new `pages/_app.js` file.
 export default function MyApp({ Component, pageProps }: AppProps) {
+
+  useEffect(() => {
+    document.addEventListener("keydown", (e) => { 
+      if (e.key === "Backspace") {
+        console.log(e)
+        console.log(e.target)
+        console.log(typeof(e.target))
+        if (!(e.target instanceof HTMLInputElement) || (e.target instanceof HTMLTextAreaElement)) {
+          e.preventDefault();
+        }
+      }
+    })
+  }, [])
   return (
     <>
       <Component {...pageProps} />

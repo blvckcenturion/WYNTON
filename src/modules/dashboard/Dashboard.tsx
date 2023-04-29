@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Menu from "../menu/Menu";
 import Combos from "../combos/Combos";
 import Users from "../users/Users";
+import Orders from "../orders/Orders";
 import { useRouter } from "next/router";
 import authService from "../users/services/auth";
 import capitalize from "../utils/functions/capitalize";
@@ -37,6 +38,13 @@ const Dashboard = () => {
                 router.push("/login")
             }
         })()
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key == "Escape") {
+                setShowUserOptions(true)
+            }
+        })
+
     }, [])
 
     const loadUser = async () => {
@@ -68,7 +76,8 @@ const Dashboard = () => {
                     case 3:
                         return <Users />
                     default:
-                        return (<h1>Hola Mundo</h1>)
+                        
+                        return (<Orders/>)
                 }
             }
 
@@ -85,6 +94,7 @@ const Dashboard = () => {
         },
         onSubmit: async (values) => {
             try {
+                
                 let val = values
                 let u = await loadUser()
                 values.username = u.username

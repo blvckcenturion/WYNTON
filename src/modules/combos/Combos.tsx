@@ -66,7 +66,6 @@ const Combos = () => {
 
     const showCombos = (combos: any[]) => {
         if (combos.length == 0) return []
-        console.log('OLA')
         return combos.map((combo) => { 
             return (
                 <tr key={combo.id}>

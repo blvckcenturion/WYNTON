@@ -104,13 +104,9 @@
             }
         }
         &:nth-child(2){
-            @apply shadow;
             grid-area: main;
             border-radius: 10px;
-            background-color: var(--bg-accent-light);
-            @media (prefers-color-scheme: dark){
-                background-color: var(--bg-accent-dark);
-            }
+            background-color: var(--bg-accent);
         }
     }
     @media(min-width: 1400px){
