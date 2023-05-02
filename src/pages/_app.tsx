@@ -13,9 +13,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     document.addEventListener("keydown", (e) => { 
       if (e.key === "Backspace") {
-        console.log(e)
-        console.log(e.target)
-        console.log(typeof(e.target))
         if (!(e.target instanceof HTMLInputElement) || (e.target instanceof HTMLTextAreaElement)) {
           e.preventDefault();
         }

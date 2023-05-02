@@ -39,6 +39,8 @@ const Dashboard = () => {
             }
         })()
 
+        console.log('sa')
+
         window.addEventListener("keydown", (e) => {
             if (e.key == "Escape") {
                 setShowUserOptions(true)
@@ -61,29 +63,6 @@ const Dashboard = () => {
     const handleToggle = (t : number) => {
         setTab(t)
     }
- 
-    const Render = (): JSX.Element  => {
-        if (user) {
-
-            if (user.user_type && user.user_type == 2) {
-                return <h1>Orders</h1>
-            } else {
-                switch(tab){
-                    case 1:
-                        return <Menu />
-                    case 2:
-                        return <Combos />
-                    case 3:
-                        return <Users />
-                    default:
-                        
-                        return (<Orders/>)
-                }
-            }
-
-        }
-        return <></>
-    }
 
     const changePassword = useFormik({
         initialValues: {
@@ -102,8 +81,6 @@ const Dashboard = () => {
                 
                 const user = await authService.login(l.username, l.old_password);
                 
-
-
                 if (l.password !== l.confirm_password) { 
                     throw new Error("Las contraseñas no coinciden.");
                 }
@@ -165,7 +142,7 @@ const Dashboard = () => {
                         <h1 className="text-primary">WYNTON</h1>
                     </div>
                     <div className="dashboard-items">
-                        {UserOptions()}
+                        {<UserOptions/>}
                     </div>
                 </div>
                 <div className="dashboard-user-details shadow appearance-none rounded" onClick={() => setShowUserOptions(true)}>
@@ -185,9 +162,13 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
-            <div className="dashboard-content">
-                <Render/>
-            </div>
+                <div className="dashboard-content">
+                    {tab == 1 && <Menu />}
+                    {tab == 2 && <Combos />}
+                    {tab == 3 && <Users />}
+                    {tab == 4 && <Orders />}
+                {/* <Render/> */}
+                </div>
             </div>
             <Modal className={"user-options-modal"} title={"Opciones de usuario"} showModal={showUserOptions} onClose={() => setShowUserOptions(false)}>
                 <div className="user-options">

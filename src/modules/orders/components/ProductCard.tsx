@@ -1,7 +1,7 @@
 import { faFileImage } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
-const ProductCard = ({className, photo, name, children, qty, onAdd, onMinus}: {className: string, photo: any, name: string, children: any, qty: number, onAdd: any, onMinus: any}) => {
+const ProductCard = ({id, className, photo, name, children, qty, handleChangeQty}: {id: number, className: string, photo: any, name: string, children: any, qty: number, handleChangeQty : any}) => {
     return (
         <div className={`orders-card ${className}`}>
             <div>
@@ -20,9 +20,9 @@ const ProductCard = ({className, photo, name, children, qty, onAdd, onMinus}: {c
                 {children}
             </div>
             <div>
-                <button className="btn btn-primary" onClick={onMinus}>-</button>
-                <input type="number" value={qty}/>
-                <button className="btn btn-primary" onClick={onAdd}>+</button>
+                <button className="btn btn-primary" onClick={() => handleChangeQty(id, qty-1)}>-</button>
+                <input type="number" readOnly value={qty}/>
+                <button className="btn btn-primary" onClick={() => handleChangeQty(id, qty+1)}>+</button>
             </div>
         </div>
     )
