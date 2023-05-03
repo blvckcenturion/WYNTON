@@ -34,6 +34,27 @@ diesel::table! {
 }
 
 diesel::table! {
+    order_item (id) {
+        id -> Integer,
+        order_id -> Integer,
+        product_id -> Nullable<Integer>,
+        combo_id -> Nullable<Integer>,
+        quantity -> Integer,
+        price -> Float,
+    }
+}
+
+diesel::table! {
+    orders (id) {
+        id -> Integer,
+        user_id -> Integer,
+        createdAt -> Timestamp,
+        updatedAt -> Nullable<Timestamp>,
+        status -> Integer,
+    }
+}
+
+diesel::table! {
     product (id) {
         id -> Integer,
         name -> Text,
@@ -72,12 +93,18 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(order_item -> combo (combo_id));
+diesel::joinable!(order_item -> orders (order_id));
+diesel::joinable!(order_item -> product (product_id));
+diesel::joinable!(orders -> user (user_id));
 diesel::joinable!(user_log -> user (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     category,
     combo,
     combo_item,
+    order_item,
+    orders,
     product,
     user,
     user_log,

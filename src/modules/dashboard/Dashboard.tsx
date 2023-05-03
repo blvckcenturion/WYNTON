@@ -28,7 +28,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         (async () => { 
-            const user = await loadUser()
+            const user = await authService.loadUser()
 
             if (user) { 
                 user.photo = user.photo && await exists(user.photo) ? convertFileSrc(user.photo) : null
@@ -49,17 +49,7 @@ const Dashboard = () => {
 
     }, [])
 
-    const loadUser = async () => {
-        let idStr= localStorage.getItem("userId")
-            
-        if (!idStr) router.push("/login")
-        else {
-            let id = parseInt(JSON.parse(idStr))
-            const user = await authService.loadById(id)
-            return user
-        }
-    }
-
+    
     const handleToggle = (t : number) => {
         setTab(t)
     }
@@ -75,7 +65,7 @@ const Dashboard = () => {
             try {
                 
                 let val = values
-                let u = await loadUser()
+                let u = await authService.loadUser()
                 values.username = u.username
                 let l = authService.changePasswordSchema.parse(values);
                 
@@ -166,7 +156,7 @@ const Dashboard = () => {
                     {tab == 1 && <Menu />}
                     {tab == 2 && <Combos />}
                     {tab == 3 && <Users />}
-                    {tab == 4 && <Orders />}
+                    {tab == 4 && <Orders user={user} />}
                 {/* <Render/> */}
                 </div>
             </div>

@@ -21,14 +21,11 @@ class comboService{
         try {
             let response : any = await invoke("create_combo", combo)
             response = await JSON.parse(response)
-            console.log( response)
             combo.id = response[0].id
             combo.products.forEach(async (product: any) => { 
                 let prod = {comboId: combo.id, productId: product.id, quantity: product.qty}
                 await invoke("create_combo_item", prod)
             })
-            console.log(combo)
-
             return response
         } catch (e: any) {
             console.log(e)

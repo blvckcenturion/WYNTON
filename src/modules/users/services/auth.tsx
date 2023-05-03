@@ -58,6 +58,18 @@ class authService {
         }
     }
 
+    public static async loadUser() {
+        const idStr = localStorage.getItem('userId')
+
+        if (!idStr) {
+            return null
+        } else {
+            let id = parseInt(JSON.parse(idStr))
+            const user = await authService.loadById(id)
+            return user
+        }
+    }
+
     public static async load() : Promise<any[]> {
         try {
             const response: string = await invoke("get_all_user");
