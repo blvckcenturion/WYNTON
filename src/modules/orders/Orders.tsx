@@ -226,7 +226,7 @@ const Orders = ({user} : {user: any}) => {
                                     <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productType">
                                         Tipo
                                     </label>
-                                    <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductType} value={productType}>
+                                    <select className="rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductType} value={productType}>
                                         <option value="0">Productos</option>
                                         <option value="1">Combos</option>
                                     </select>
@@ -236,7 +236,7 @@ const Orders = ({user} : {user: any}) => {
                                         <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productType">
                                             Categoria
                                         </label>
-                                        <select className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductCategory} value={productCategory}>
+                                        <select className="w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductCategory} value={productCategory}>
                                             <option value="-2">Todos</option>
                                             <option value="-1">Sin categoria</option>
                                             {categories.map((category: any) => {
