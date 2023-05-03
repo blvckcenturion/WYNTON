@@ -11,6 +11,8 @@
     h1{
         width: 70%;
         color: var(--accent-color-1);
+        text-align: start;
+        margin-left: 10px;
     }
     
     svg{

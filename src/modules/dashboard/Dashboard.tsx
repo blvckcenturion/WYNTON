@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Logo from "../../assets/logo";
 import NavigationOption from "./NavigationOption";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBellConcierge, faCartShopping, faKey, faObjectGroup, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBellConcierge, faCartShopping, faKey, faObjectGroup, faReceipt, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Menu from "../menu/Menu";
 import Combos from "../combos/Combos";
@@ -114,7 +114,8 @@ const Dashboard = () => {
                         <NavigationOption title={"Menu"} icon={faBellConcierge} onClick={() => handleToggle(1)} active={tab == 1}/>
                         <NavigationOption title={"Combos"} icon={faObjectGroup} onClick={() =>handleToggle(2)} active={tab === 2}/>
                         <NavigationOption title={"Usuarios"} icon={faUser} onClick={() => handleToggle(3)} active={tab === 3}/>
-                        <NavigationOption title={"Ordenes"} icon={faCartShopping} onClick={() =>handleToggle(4)} active={tab === 4}/>
+                        <NavigationOption title={"Ordenes"} icon={faCartShopping} onClick={() => handleToggle(4)} active={tab === 4} />
+                        <NavigationOption title={"Historial de ordenes"} icon={faReceipt} onClick={() =>handleToggle(5)} active={tab === 5}/>
                     </>
                 )
             }
@@ -157,6 +158,7 @@ const Dashboard = () => {
                     {tab == 2 && <Combos />}
                     {tab == 3 && <Users />}
                     {tab == 4 && <Orders user={user} />}
+                    {tab == 5 && <h1>hola</h1>}
                 {/* <Render/> */}
                 </div>
             </div>

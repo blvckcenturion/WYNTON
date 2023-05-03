@@ -29,7 +29,7 @@ const Orders = ({user} : {user: any}) => {
             let products: any[] = await productService.load();
             products = products.map((p: any) => {
                 p.name = capitalize(p.name)
-                p.qty = 1
+                p.qty = 0
                 return p
             })
             let categories: any[] = await categoryService.load();
@@ -42,7 +42,7 @@ const Orders = ({user} : {user: any}) => {
             let combos: any[] = await comboService.load();
             combos = combos.map((c: any) => {
                 c.denomination = capitalize(c.denomination)
-                c.qty = 1
+                c.qty = 0
                 c.products = c.products.map((p: any) => {
                     let prod = products.find((product: any) => product.id === p.id)
                     return {
