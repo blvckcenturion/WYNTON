@@ -16,6 +16,7 @@ import { convertFileSrc } from "@tauri-apps/api/tauri";
 import Modal from "../utils/components/modal";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
+import OrderAnalytics from "../orders/OrdersHistory";
 
 const Dashboard = () => { 
 
@@ -158,8 +159,7 @@ const Dashboard = () => {
                     {tab == 2 && <Combos />}
                     {tab == 3 && <Users />}
                     {tab == 4 && <Orders user={user} />}
-                    {tab == 5 && <h1>hola</h1>}
-                {/* <Render/> */}
+                    {tab == 5 && <OrderAnalytics/>}
                 </div>
             </div>
             <Modal className={"user-options-modal"} title={"Opciones de usuario"} showModal={showUserOptions} onClose={() => setShowUserOptions(false)}>

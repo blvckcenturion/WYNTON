@@ -72,7 +72,7 @@ const UserOperations = () => {
         return users.map((user: any) => {
             return (
                 <tr key={user.id}>
-                    <td>{`${capitalize(user.names)} ${capitalize(user.last_names)}`}</td>
+                    <td>{user.names} {user.last_names}</td>
                     <td>{user.username}</td>
                     <td>{user.user_type == 1 ? "Administrador" : "Empleado"}</td>
                     <td>{user.user_reference.length > 0 ? user.user_reference : "N/A"}</td>

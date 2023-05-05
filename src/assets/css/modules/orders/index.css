@@ -1,4 +1,5 @@
 @import "./components/Card.css";
+@import "./components/OrderAnalytics.css";
 
 .orders-module{
     width: 100%;

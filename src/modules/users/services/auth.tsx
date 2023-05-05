@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { exists } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import userLogService from "./userLog";
+import capitalize from "../../utils/functions/capitalize";
 
 class authService {
 
@@ -80,7 +81,9 @@ class authService {
 
             users = await users.map(async (user) => {
                     return {
-                            ...user,
+                        ...user,
+                            names: capitalize(user.names),
+                            last_names: capitalize(user.last_names),
                             photo: user.photo && await exists(user.photo) ? convertFileSrc(user.photo) : null,
                             photo_path: user.photo
                         }

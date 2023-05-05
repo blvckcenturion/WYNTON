@@ -2,6 +2,9 @@
 @import "./components/UserLog.css";
 
 .login-page{
+    input{
+        background-color: var(--bg-accent);
+    }
     @apply text-accent-1;
     display: flex;
     flex-direction: row;
