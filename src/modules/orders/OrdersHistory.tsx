@@ -3,6 +3,7 @@ import authService from "../users/services/auth";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFighterJet } from "@fortawesome/free-solid-svg-icons";
+import orderService from "./services/orders";
 
 const OrderAnalytics = () => {
 
@@ -16,8 +17,10 @@ const OrderAnalytics = () => {
     useEffect(() => {
         (async () => {
             let users: any[] = await authService.load()
-            console.log(users)
             setUsers(users)
+
+            let orders: any[] = await orderService.load()
+            console.log(orders)
         })()
     }, [])
 
@@ -119,7 +122,7 @@ const OrderAnalytics = () => {
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Unidades Vendidas</th>
+                                    <th>Unidades</th>
                                 </tr>
                             </thead>
                             <tbody>

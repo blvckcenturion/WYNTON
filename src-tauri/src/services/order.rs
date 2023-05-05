@@ -28,3 +28,17 @@ pub fn create_order_item(conn: &mut SqliteConnection, item: &OrderItemNew) -> St
         .expect("Error");
     serde_json::to_string(&order_item).unwrap()
 }
+
+pub fn get_all_order(conn: &mut SqliteConnection) -> String {
+    use crate::schema::orders::dsl::{orders, status};
+
+    let get_all_order: Vec<Order> = orders.filter(status.eq(1)).load::<Order>(conn).unwrap();
+    serde_json::to_string(&get_all_order).unwrap()
+}
+
+pub fn get_all_order_by_order_id(conn: &mut SqliteConnection, order_id: i32) -> String {
+    use crate::schema::orders::dsl::{orders, status, id};
+
+    let get_all_order: Vec<Order> = orders.filter(status.eq(1)).filter(id.eq(order_id)).load::<Order>(conn).unwrap();
+    serde_json::to_string(&get_all_order).unwrap()
+}

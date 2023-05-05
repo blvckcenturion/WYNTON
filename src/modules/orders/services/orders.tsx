@@ -21,6 +21,38 @@ class orderService {
             return null
         }
     }
+
+    public static async load(): Promise<any[]> {
+        try {
+            let prod: string = await invoke("get_all_products_registered")
+            let products: any[] = await JSON.parse(prod)
+            const response: string = await invoke("get_all_order")
+            let orders: any[] = await JSON.parse(response)
+            orders = await orders.map(async (order) => {
+                let i: string = await invoke("get_all_by_order_id", { orderId: order.id })
+                let items: any[] = await JSON.parse(i)
+                items = await items.map((item: any) => {
+                    let product = products.find((p: any) => p.id === item.productId)
+                    if (product === undefined) {
+                        product = products.find((p: any) => p.id === item.comboId)
+                    }
+                })
+
+                return {
+                    ...order,
+                    items: items
+                }
+            })
+            
+            orders = await Promise.all(orders)
+            return orders
+        } catch (e: any) { 
+
+            console.log(e)
+            displayError(e)
+            return []
+        }
+    }
 }
 
 export default orderService

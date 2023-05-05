@@ -35,3 +35,20 @@ pub fn create_order_item(
     };
     services::order::create_order_item(conn, &item)
 }
+
+#[tauri::command]
+pub fn get_all_order(
+    state: tauri::State<AppState>,
+) -> String {
+    let conn = &mut state.conn.lock().unwrap();
+    services::order::get_all_order(conn)
+}
+
+#[tauri::command]
+pub fn get_all_by_order_id(
+    order_id: i32,
+    state: tauri::State<AppState>,
+) -> String {
+    let conn = &mut state.conn.lock().unwrap();
+    services::order::get_all_order_by_order_id(conn, order_id)
+}

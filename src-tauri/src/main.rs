@@ -72,8 +72,10 @@ fn main() {
             commands::user_log::create_user_log,
             commands::user_log::update_user_log,
             commands::user_log::get_all_user_logs,
-            commands::order::create_order,
+            commands::order::create_order,~
             commands::order::create_order_item,
+            commands::order::get_all_order,
+            commands::order::get_all_by_order_id
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

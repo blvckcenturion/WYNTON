@@ -64,6 +64,13 @@ pub fn get_all(conn: &mut SqliteConnection) -> String{
     serde_json::to_string(&prod).unwrap()
 }
 
+pub fn get_all_registered(conn: &mut SqliteConnection) -> String{
+    use crate::schema::product::dsl::{product, status};
+
+    let prod: Vec<Product> = product.load::<Product>(conn).unwrap();
+    serde_json::to_string(&prod).unwrap()
+}
+
 pub fn get_all_by_category(conn: &mut SqliteConnection, id: i32) -> String {
     use crate::schema::product::dsl::{product, status as p_status, category_id};
     
