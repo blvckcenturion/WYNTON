@@ -1,4 +1,4 @@
-use crate::models::order::{Order, OrderNew, OrderItemNew};
+use crate::models::order::{Order, OrderNew, OrderItemNew, OrderItem};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
@@ -36,9 +36,9 @@ pub fn get_all_order(conn: &mut SqliteConnection) -> String {
     serde_json::to_string(&get_all_order).unwrap()
 }
 
-pub fn get_all_order_by_order_id(conn: &mut SqliteConnection, order_id: i32) -> String {
-    use crate::schema::orders::dsl::{orders, status, id};
+pub fn get_all_order_item_by_order_id(conn: &mut SqliteConnection, order_id: i32) -> String {
+    use crate::schema::order_item::dsl::{order_item, order_id as order_item_order_id};
 
-    let get_all_order: Vec<Order> = orders.filter(status.eq(1)).filter(id.eq(order_id)).load::<Order>(conn).unwrap();
-    serde_json::to_string(&get_all_order).unwrap()
+    let get_all_order_item: Vec<OrderItem> = order_item.filter(order_item_order_id.eq(order_id)).load::<OrderItem>(conn).unwrap();
+    serde_json::to_string(&get_all_order_item).unwrap()
 }

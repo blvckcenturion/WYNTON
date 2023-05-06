@@ -75,7 +75,7 @@ const UserOperations = () => {
                     <td>{user.names} {user.last_names}</td>
                     <td>{user.username}</td>
                     <td>{user.user_type == 1 ? "Administrador" : "Empleado"}</td>
-                    <td>{user.user_reference.length > 0 ? user.user_reference : "N/A"}</td>
+                    <td>{user.user_reference && user.user_reference.length > 0 ? user.user_reference : "N/A"}</td>
                     <td>
                         <div>
                             {user.photo && (

@@ -45,6 +45,7 @@ fn main() {
             commands::product::delete_product,
             commands::product::get_product,
             commands::product::get_all_product,
+            commands::product::get_all_product_registered,
             commands::product::find_by_name_product,
             commands::product::get_all_product_by_category,
             commands::combo::create_combo,
@@ -54,6 +55,7 @@ fn main() {
             commands::combo::get_combo,
             commands::combo::get_all_combo,
             commands::combo::find_by_name_combo,
+            commands::combo::get_all_combo_registered,
             commands::combo_item::create_combo_item,
             commands::combo_item::update_combo_item,
             commands::combo_item::delete_combo_item,
@@ -72,7 +74,7 @@ fn main() {
             commands::user_log::create_user_log,
             commands::user_log::update_user_log,
             commands::user_log::get_all_user_logs,
-            commands::order::create_order,~
+            commands::order::create_order,
             commands::order::create_order_item,
             commands::order::get_all_order,
             commands::order::get_all_by_order_id

@@ -60,3 +60,9 @@ pub fn get_all_product_by_category(id: i32, state: tauri::State<AppState>) -> St
     let conn = &mut state.conn.lock().unwrap();
     services::product::get_all_by_category(conn, id)
 }
+
+#[tauri::command]
+pub fn get_all_product_registered(state: tauri::State<AppState>) -> String {
+    let conn = &mut state.conn.lock().unwrap();
+    services::product::get_all_registered(conn)
+}

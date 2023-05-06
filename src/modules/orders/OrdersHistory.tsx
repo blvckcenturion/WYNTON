@@ -4,40 +4,190 @@ import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFighterJet } from "@fortawesome/free-solid-svg-icons";
 import orderService from "./services/orders";
+import convertUTCDateToLocalDate from "../utils/functions/convertUTCDateToLocalDate";
+import capitalize from "../utils/functions/capitalize";
 
 const OrderAnalytics = () => {
 
     const [orders, setOrders] = useState<any[]>([])
+    const [allOrders, setAllOrders] = useState<any[]>([])
     const [users, setUsers] = useState<any[]>([])
     const [startDate, setStartDate] = useState<string | number | readonly string[] | undefined >("")
     const [endDate, setEndDate] = useState<string | number | readonly string[] | undefined >("")
     const [user, setUser] = useState<any>("")
+    const [stats, setStats] = useState<any>({})
     const [performance, setPerformance] = useState<any>("")
 
     useEffect(() => {
         (async () => {
             let users: any[] = await authService.load()
-            setUsers(users)
-
             let orders: any[] = await orderService.load()
-            console.log(orders)
+            orders = orders.map((order) => {
+                let user = users.find((user) => user.id === order.user_id)
+                return {
+                    createdAt: order.created_at,
+                    id: order.id,
+                    userId: order.user_id,
+                    total: order.items.reduce((acc : number, item : any) => { 
+                        return acc + (item.price * item.quantity)
+                    }, 0),
+                    items: order.items.map((item: any) => { 
+                        return {
+                            price: item.price,
+                            quantity: item.quantity,
+                            subtotal: item.price * item.quantity,
+                            comboId: item.combo_id,
+                            productId: item.product_id,
+                            id: item.id,
+                            name: capitalize(item.product ? item.product.name : item.combo.denomination)
+                        }
+                    }),
+                    userName: user ? `${user.names} ${user.last_names}` : "Super Admin",
+                    dateTime: convertUTCDateToLocalDate(new Date(order.created_at)).toLocaleString()
+                }
+            })
+            let stats = await calculateOrderStats(orders)
+            setUsers(users)
+            setOrders(orders)
+            setAllOrders(orders)
+            setStats(stats)
+
         })()
+
     }, [])
 
-    const handleUserChange = (e: any) => { 
+    const calculateOrderStats = async (orders: any[]) => { 
+        let total = 0
+        let units = 0
+        let totalOrders = orders.length
+        let ordersPerDay: any[] = []
+        let ordersPerDayAvg = 0
+        let mostSoldProducts: any[] = []
+        let bestUserSellers: any[] = []
+        orders.forEach((order) => { 
+            total += order.total
+            units += order.items.reduce((acc: number, item: any) => { 
+                return acc + item.quantity
+            }, 0)
+            let date = new Date(order.createdAt)
+            let dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+            let orderPerDay = ordersPerDay.find((orderPerDay) => orderPerDay.date === dateStr)
+            if (orderPerDay) {
+                orderPerDay.orders.push(order)
+            }
+            else {
+                ordersPerDay.push({
+                    date: dateStr,
+                    orders: [order]
+                })
+            }
+
+            order.items.forEach((item: any) => {
+                let product = mostSoldProducts.find((product) => product.productId === item.productId || product.comboId === item.comboId)
+                if (product) {
+                    product.quantity += item.quantity
+                } else {
+                    mostSoldProducts.push({
+                        productId: item.productId,
+                        comboId: item.comboId,
+                        name: item.name,
+                        quantity: item.quantity
+                    })
+                }
+            })
+
+            let seller = bestUserSellers.find((seller) => seller.userId === order.userId)
+            if (seller) {
+                seller.total += order.items.reduce((acc: number, item: any) => { 
+                    return acc + item.quantity
+                }, 0)
+            } else {
+                bestUserSellers.push({
+                    userId: order.userId,
+                    userName: order.userName,
+                    total: order.items.reduce((acc: number, item: any) => {
+                        return acc + item.quantity
+                    }, 0)
+                })
+            }
+        })
+
+        mostSoldProducts = mostSoldProducts.sort((a, b) => {
+            return b.quantity - a.quantity
+        })
+
+        ordersPerDayAvg = ordersPerDay.reduce((acc: number, orderPerDay: any) => {
+            return acc + orderPerDay.orders.length
+        }, 0) / ordersPerDay.length
+        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers }
+    } 
+
+    const handleUserChange = async (e: any) => { 
         if (e.target.value !== "" && performance === "2") { 
             setPerformance("")
         }
+        // console.log(loadOrders(e.target.value))
         setUser(e.target.value)
+
+        let { orders, stats } = await loadOrders(e.target.value, null)
+
+        setStats(stats)
+        setOrders(orders)
+
     }
 
-    const handleStartDateChange = (e: any) => {
+    const loadOrders = async (newUser: any | null, newStartDate: any | null) => {
+    //Usuario: santiagosarabia168250
+    //Contraseña: FYvidi7ZxKvk
+        let orders = allOrders
+        // console.log(orders)
+        if (newUser !== "" && newUser !== null) { 
+            orders = orders.filter((order) => {
+                return order.userId == newUser
+            })
+        } else {
+            orders = orders.filter((order) => {
+                return order.userId == user.id
+            })
+        }
+        if (newStartDate !== "" && newStartDate !== undefined && newStartDate !== null) { 
+            let date = newStartDate.toString()
+            orders = orders.filter((order) => {
+                return new Date(order.createdAt) >= new Date(date)
+            })
+        } else {
+            if (startDate !== "" && startDate !== undefined && startDate !== null) { 
+                let date = startDate.toString()
+                orders = orders.filter((order) => {
+                    return new Date(order.createdAt) >= new Date(date)
+                })
+            }
+            console.log(orders)
+        }
+        if (endDate !== "" && endDate !== undefined) { 
+            let date = endDate.toString()
+            orders = orders.filter((order) => {
+                return new Date(order.createdAt) <= new Date(date)
+            })
+        }
+        
+        let stats = await calculateOrderStats(orders)
+        
+        return { orders, stats}
+    }
+
+    const handleStartDateChange = async (e: any) => {
         if (endDate != "" && endDate != undefined) { 
             if (e.target.value > endDate) {
                 return;
             }
         }
         setStartDate(e.target.value)
+
+        let { orders, stats } = await loadOrders(null,e.target.value)
+
+        setStats(stats)
+        setOrders(orders)
     }
 
     const handleEndDateChange = (e: any) => {
@@ -49,10 +199,15 @@ const OrderAnalytics = () => {
         setEndDate(e.target.value)
     }
 
-    const cleanFilters = () => {
+    const cleanFilters = async () => {
         setStartDate("")
         setEndDate("")
         setUser("")
+
+        let { orders, stats } = await loadOrders(null, null)
+
+        setStats(stats)
+        setOrders(orders)
     }
 
     return (
@@ -70,7 +225,6 @@ const OrderAnalytics = () => {
                                     <option value={user.id}>{user.names} {user.last_names}</option>
                                 )
                             })}
-                            <option value="44">ras</option>
                         </select>
                     </div>
                     <div>
@@ -109,10 +263,10 @@ const OrderAnalytics = () => {
                 </form>
             </div>
             <div>
-                <OrderAnalyticsCard title="Total generado" value="100,000.00 BS" />
-                <OrderAnalyticsCard title="Numero de ordenes" value="100" />
-                <OrderAnalyticsCard title="Promedio diario de ventas" value="10" />
-                <OrderAnalyticsCard title={"Unidades vendidas"} value="10" />
+                <OrderAnalyticsCard title="Total generado" value={`${stats.total ? stats.total.toFixed(2): 0} BS`} />
+                <OrderAnalyticsCard title="Numero de ordenes" value={`${stats.totalOrders ? stats.totalOrders : 0}`} />
+                <OrderAnalyticsCard title="Promedio diario de ventas" value={`${stats.ordersPerDayAvg ? stats.ordersPerDayAvg.toFixed(2) : 0}`} />
+                <OrderAnalyticsCard title={"Unidades vendidas"} value={`${stats.units ? stats.units : 0}`} />
             </div>
             <div>
                 {performance ? (
@@ -126,10 +280,22 @@ const OrderAnalytics = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Producto 1</td>
-                                    <td>100</td>
-                                </tr>
+                                {performance == "1" && stats.mostSoldProducts && stats.mostSoldProducts.map((product: any) => {
+                                    return (
+                                        <tr>
+                                            <td>{product.name}</td>
+                                            <td>{product.quantity}</td>
+                                        </tr>
+                                    )
+                                })}
+                                {performance == "2" && stats.bestUserSellers && stats.bestUserSellers.map((user: any) => { 
+                                    return (
+                                        <tr>
+                                            <td>{user.userName}</td>
+                                            <td>{user.total}</td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -145,12 +311,28 @@ const OrderAnalytics = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>12/12/2021 12:00</td>
-                                <td>Usuario 1</td>
-                                <td>10</td>
-                                <td>100,000.00 BS</td>
-                            </tr>
+                            {orders.map((order) => { 
+                                return (
+                                    <tr>
+                                        <td>{order.dateTime}</td>
+                                        <td>{order.userName}</td>
+                                        <td>
+                                        {
+                                            order.items.map((item: any) => {
+                                                return (
+                                                    <div>
+                                                        <span>{item.name}: </span>
+                                                        <span>{item.price.toFixed(2)} BS x</span>
+                                                        <span className="text-accent-1">{item.quantity} = {item.subtotal} BS</span>
+                                                    </div>
+                                                )
+                                             })
+                                        }
+                                        </td>
+                                        <td>{order.total.toFixed(2)} BS</td>
+                                    </tr>
+                                )
+                            })}
                         </tbody>
                     </table>
                 </div>

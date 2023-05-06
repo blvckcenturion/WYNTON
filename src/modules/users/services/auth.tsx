@@ -92,10 +92,9 @@ class authService {
             users = await Promise.all(users)
 
             let userId = localStorage.getItem('userId');
-            let uid = userId ? parseInt(userId) : null;
             // delete currentUser from users array
             users = users.filter((user) => {
-                return user.id !== uid
+                return user.id !== 1
             });
             return users;
         } catch (e: any) {

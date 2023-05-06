@@ -54,3 +54,8 @@ pub fn get_all_combo(state: tauri::State<AppState>) -> String {
     services::combo::get_all(conn)
 }
 
+#[tauri::command]
+pub fn get_all_combo_registered(state: tauri::State<AppState>) -> String {
+    let conn = &mut state.conn.lock().unwrap();
+    services::combo::get_all_registered(conn)
+}

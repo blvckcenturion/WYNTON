@@ -73,6 +73,9 @@
             input[type=number] {
             -moz-appearance: textfield;
             }
+            input{
+                background-color: var(--bg-accent);
+            }
         }
     }
 

@@ -24,17 +24,30 @@ class orderService {
 
     public static async load(): Promise<any[]> {
         try {
-            let prod: string = await invoke("get_all_products_registered")
+            let prod: string = await invoke("get_all_product_registered")
             let products: any[] = await JSON.parse(prod)
+            
+            let comb: string = await invoke("get_all_combo_registered")
+            let combos: any[] = await JSON.parse(comb)
+
             const response: string = await invoke("get_all_order")
             let orders: any[] = await JSON.parse(response)
+
             orders = await orders.map(async (order) => {
                 let i: string = await invoke("get_all_by_order_id", { orderId: order.id })
                 let items: any[] = await JSON.parse(i)
-                items = await items.map((item: any) => {
-                    let product = products.find((p: any) => p.id === item.productId)
-                    if (product === undefined) {
-                        product = products.find((p: any) => p.id === item.comboId)
+                items = await items.map((item: any) => { 
+                    let product = products.find((p: any) => p.id === item.product_id)
+                    if (product === undefined) { 
+                        product = combos.find((p: any) => p.id === item.combo_id)
+                        return {
+                            ...item,
+                            combo: product
+                        }
+                    }
+                    return {
+                        ...item,
+                        product: product
                     }
                 })
 

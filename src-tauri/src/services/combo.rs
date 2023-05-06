@@ -67,3 +67,10 @@ pub fn get_all(conn: &mut SqliteConnection) -> String{
     let get_combo: Vec<Combo> = combo.filter(status.eq(1)).load::<Combo>(conn).unwrap();
     serde_json::to_string(&get_combo).unwrap()
 }
+
+pub fn get_all_registered(conn: &mut SqliteConnection) -> String{
+    use crate::schema::combo::dsl::{combo};
+
+    let get_combo: Vec<Combo> = combo.load::<Combo>(conn).unwrap();
+    serde_json::to_string(&get_combo).unwrap()
+}

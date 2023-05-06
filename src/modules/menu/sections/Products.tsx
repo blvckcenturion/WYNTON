@@ -64,7 +64,7 @@ const Products = () => {
       return (
         <tr key={product.id}>
           <td>{capitalize(product.name)}</td>
-          <td>{product.price}</td>
+          <td>{product.price.toFixed(2)} BS</td>
           <td>{product.description ? capitalize(product.description) : "N/A"}</td>
           <td>{product.category?.name ? capitalize(product.category.name) : "N/A"}</td>
           <td>

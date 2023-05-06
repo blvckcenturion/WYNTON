@@ -50,5 +50,5 @@ pub fn get_all_by_order_id(
     state: tauri::State<AppState>,
 ) -> String {
     let conn = &mut state.conn.lock().unwrap();
-    services::order::get_all_order_by_order_id(conn, order_id)
+    services::order::get_all_order_item_by_order_id(conn, order_id)
 }
