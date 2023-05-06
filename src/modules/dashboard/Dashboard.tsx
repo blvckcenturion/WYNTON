@@ -157,18 +157,18 @@ const Dashboard = () => {
                 <div className="dashboard-content">
                     {user && user.user_type && (user.user_type == 1 || user.user_type == 3) ? (
                         <>
-
+                            {tab == 1 && <Menu />}
+                            {tab == 2 &&  <Combos />}
+                            {tab == 3 && <Users />}
+                            {tab == 4 && <Orders user={user} />}
+                            {tab == 5 && <OrderAnalytics/>}
                         </>
                     ) : (
                         <>
                             {tab == 1 && <Orders user={user} />}
                         </>
                     )}
-                    {tab == 1 && <Menu />}
-                    {tab == 2 &&  <Combos />}
-                    {tab == 3 && <Users />}
-                    {tab == 4 && <Orders user={user} />}
-                    {tab == 5 && <OrderAnalytics/>}
+                    
                 </div>
             </div>
             <Modal className={"user-options-modal"} title={"Opciones de usuario"} showModal={showUserOptions} onClose={() => setShowUserOptions(false)}>
