@@ -25,7 +25,7 @@ const OrderAnalytics = () => {
             orders = orders.map((order) => {
                 let user = users.find((user) => user.id === order.user_id)
                 return {
-                    createdAt: order.created_at,
+
                     id: order.id,
                     userId: order.user_id,
                     total: order.items.reduce((acc : number, item : any) => { 
@@ -43,7 +43,7 @@ const OrderAnalytics = () => {
                         }
                     }),
                     userName: user ? `${user.names} ${user.last_names}` : "Super Admin",
-                    dateTime: convertUTCDateToLocalDate(new Date(order.created_at)).toLocaleString()
+                    dateTime: convertUTCDateToLocalDate(new Date(order.created_at))
                 }
             })
             let stats = await calculateOrderStats(orders)
@@ -126,48 +126,45 @@ const OrderAnalytics = () => {
         if (e.target.value !== "" && performance === "2") { 
             setPerformance("")
         }
-        // console.log(loadOrders(e.target.value))
         setUser(e.target.value)
-
-        let { orders, stats } = await loadOrders(e.target.value, null)
-
+        
+        let { orders, stats } = await loadOrders(e.target.value, startDate, endDate)
+        
         setStats(stats)
         setOrders(orders)
 
     }
 
-    const loadOrders = async (newUser: any | null, newStartDate: any | null) => {
-    //Usuario: santiagosarabia168250
-    //Contraseña: FYvidi7ZxKvk
+    const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null) => {
+        //Usuario: santiagosarabia168250
+        //Contraseña: FYvidi7ZxKvk
         let orders = allOrders
-        // console.log(orders)
-        if (newUser !== "" && newUser !== null) { 
+
+        if (userFilter !== "" && userFilter !== null) { 
             orders = orders.filter((order) => {
-                return order.userId == newUser
-            })
-        } else {
-            orders = orders.filter((order) => {
-                return order.userId == user.id
+                return order.userId == userFilter
             })
         }
-        if (newStartDate !== "" && newStartDate !== undefined && newStartDate !== null) { 
-            let date = newStartDate.toString()
+
+        if (startDateFilter !== "" && startDateFilter !== null) { 
+            let date = startDateFilter.toString()
             orders = orders.filter((order) => {
-                return new Date(order.createdAt) >= new Date(date)
+                let d = convertUTCDateToLocalDate(new Date(date))
+                let d1 = new Date(order.dateTime.getFullYear(), order.dateTime.getMonth(), order.dateTime.getDate())
+                d = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+                
+                return d1 >= d
             })
-        } else {
-            if (startDate !== "" && startDate !== undefined && startDate !== null) { 
-                let date = startDate.toString()
-                orders = orders.filter((order) => {
-                    return new Date(order.createdAt) >= new Date(date)
-                })
-            }
-            console.log(orders)
         }
-        if (endDate !== "" && endDate !== undefined) { 
-            let date = endDate.toString()
+
+        if (endDateFilter !== "" && endDateFilter !== null) {
+            let date = endDateFilter.toString()
             orders = orders.filter((order) => {
-                return new Date(order.createdAt) <= new Date(date)
+                let d = convertUTCDateToLocalDate(new Date(date))
+                let d1 = new Date(order.dateTime.getFullYear(), order.dateTime.getMonth(), order.dateTime.getDate())
+                d = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
+                return d1 <= d
             })
         }
         
@@ -183,31 +180,38 @@ const OrderAnalytics = () => {
             }
         }
         setStartDate(e.target.value)
-
-        let { orders, stats } = await loadOrders(null,e.target.value)
-
+        
+        let { orders, stats } = await loadOrders(user, e.target.value, endDate)
+        
         setStats(stats)
         setOrders(orders)
     }
 
-    const handleEndDateChange = (e: any) => {
+    const handleEndDateChange = async (e: any) => {
         if (startDate != "" && startDate != undefined) {
             if (e.target.value < startDate) {
                 return;
             }
         }
         setEndDate(e.target.value)
+
+        let { orders, stats } = await loadOrders(user, startDate, e.target.value)
+        
+        setStats(stats)
+        setOrders(orders)
     }
 
     const cleanFilters = async () => {
-        setStartDate("")
-        setEndDate("")
-        setUser("")
+        await setStartDate("")
+        await setEndDate("")
+        await setUser("")
 
-        let { orders, stats } = await loadOrders(null, null)
+        let { orders, stats } = await loadOrders(null, null, null)
 
         setStats(stats)
         setOrders(orders)
+
+        
     }
 
     return (
@@ -288,6 +292,7 @@ const OrderAnalytics = () => {
                                         </tr>
                                     )
                                 })}
+                                
                                 {performance == "2" && stats.bestUserSellers && stats.bestUserSellers.map((user: any) => { 
                                     return (
                                         <tr>
@@ -314,7 +319,7 @@ const OrderAnalytics = () => {
                             {orders.map((order) => { 
                                 return (
                                     <tr>
-                                        <td>{order.dateTime}</td>
+                                        <td>{order.dateTime.toLocaleString()}</td>
                                         <td>{order.userName}</td>
                                         <td>
                                         {
