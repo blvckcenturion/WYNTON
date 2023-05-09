@@ -493,12 +493,15 @@ div.item-table {
             justify-content: space-between;
             flex-direction: row;
             > div{
+                
                 height: 100%;
                 
                 transition: inherit;
                 
                 &:nth-child(1){
+                  @apply shadow;  
                     background-color: var(--bg-accent);
+
                     width: 60%;
                     padding: 5px;
                     img{
@@ -624,4 +627,10 @@ div.item-table {
             height: 85%;
         }
   }
+}
+
+table{
+  text-align: center;
+  -ms-word-break: break-word;
+  word-break: break-word;
 }

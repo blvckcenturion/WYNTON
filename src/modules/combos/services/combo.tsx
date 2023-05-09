@@ -2,6 +2,9 @@ import { invoke } from "@tauri-apps/api"
 import { toast } from "react-toastify"
 import { z } from "zod"
 import displayError from "../../utils/functions/displayError"
+import createImage from "../../utils/functions/createImage"
+import { exists } from "@tauri-apps/api/fs"
+import { convertFileSrc } from "@tauri-apps/api/tauri"
 class comboService{
     public static comboValidationSchema = z.object({
         denomination: z.string({
@@ -15,10 +18,15 @@ class comboService{
             id: z.number(),
             qty: z.number().min(1, { message: "La cantidad debe ser mayor o igual a 1." })
         })),
+        photo: z.string().optional(),
+        photoSrc: z.string().optional()
     })
 
     public static async create(combo: any) {
         try {
+            if (combo.photo != "" && combo.photoSrc !== "") { 
+                combo.photo = await createImage("combos", combo.photoSrc)
+            }
             let response : any = await invoke("create_combo", combo)
             response = await JSON.parse(response)
             combo.id = response[0].id
@@ -43,7 +51,9 @@ class comboService{
                 products = await JSON.parse(products)
                 return {
                     ...combo,
-                    products: products
+                    products: products,
+                    photo: combo.photo && await exists(combo.photo) ? convertFileSrc(combo.photo) : null,
+                    photo_path: combo.photo
                 }
             })
             combos = await Promise.all(combos)
@@ -77,11 +87,19 @@ class comboService{
 
     public static async update(combo: any, updateItems: boolean, updateCombo: boolean) { 
         try {
+            
             console.log(combo)
-            let response : any = null
-            if (updateCombo) {
-                console.log(combo.price)
-                const response : any = await invoke("update_combo", {id: combo.id, denomination: combo.denomination, price: combo.price})
+            if (updateCombo || combo.photoReplaced) {
+                if (combo.photo !== "" && combo.photoSrc !== "") { 
+                    combo.photo = await createImage("combos", combo.photoSrc)
+                } else if (combo.photoReplaced && combo.photoSrc === "") { 
+                    combo.photo = null
+                } else {
+                    combo.photo = combo.photo_path
+                }
+
+                console.log(combo)
+                let response = await invoke("update_combo", {id: combo.id, denomination: combo.denomination, price: combo.price, photo: combo.photo})
             }
             if (updateItems) { 
                 await invoke("delete_combo_item", { id: combo.id })
@@ -90,7 +108,9 @@ class comboService{
                     await invoke("create_combo_item", prod)
                 })
             }
+
             toast.success("Combo actualizado correctamente")
+            
         } catch (e: any) {
             console.log(e)
             displayError(e)

@@ -12,3 +12,6 @@ CREATE TABLE user(
     updatedAt TIMESTAMP,
     status INTEGER NOT NULL DEFAULT 1
 );
+
+INSERT INTO user (names, last_names, username, password, user_type)
+VALUES ('admin', 'admin', 'admin', '$2a$10$XlatuzTCS6UtGWoNFx1QDuPuBtxvux92hBweGD6a7hMDynhjkaE2G', 3);

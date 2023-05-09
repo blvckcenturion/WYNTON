@@ -75,11 +75,7 @@
                 border: 0;
                 padding: 10px;
                 @apply shadow;
-                table{
-                    text-align: center;
-                    -ms-word-break: break-word;
-                    word-break: break-word;
-                }
+                
                 &.performance{
                     grid-column: 1/2;
                     height: 100%;

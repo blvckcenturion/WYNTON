@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faFileImage } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "./components/ProductCard";
 import elementSearch from "../utils/functions/elementSearch";
-import Modal from "../utils/components/modal";
+import Modal from "../utils/components/Modal";
 import orderService from "./services/orders";
 import { toast } from "react-toastify";
 

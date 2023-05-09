@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Logo from "../../assets/logo";
 import NavigationOption from "./NavigationOption";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBellConcierge, faCartShopping, faKey, faObjectGroup, faReceipt, faRightFromBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBellConcierge, faCancel, faCartShopping, faCheck, faKey, faObjectGroup, faReceipt, faRightFromBracket, faSave, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Menu from "../menu/Menu";
 import Combos from "../combos/Combos";
@@ -13,10 +13,11 @@ import authService from "../users/services/auth";
 import capitalize from "../utils/functions/capitalize";
 import { exists } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import Modal from "../utils/components/modal";
+import Modal from "../utils/components/Modal";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import OrderAnalytics from "../orders/OrdersHistory";
+import ActionModal from "../utils/components/ActionModal";
 
 const Dashboard = () => { 
 
@@ -26,6 +27,7 @@ const Dashboard = () => {
     const [user, setUser] = useState<any>(null)
     const [showUserOptions, setShowUserOptions] = useState(false)
     const [showPasswordUpdate, setShowPasswordUpdate] = useState(false)
+    const [showConfirmLogout, setShowConfirmLogout] = useState(false)
 
     useEffect(() => {
         (async () => { 
@@ -39,8 +41,6 @@ const Dashboard = () => {
                 router.push("/login")
             }
         })()
-
-        console.log('sa')
 
         window.addEventListener("keydown", (e) => {
             if (e.key == "Escape") {
@@ -142,13 +142,12 @@ const Dashboard = () => {
                         <img src={user.photo} alt="" />
                     ) : (
                         <FontAwesomeIcon icon={faUserCircle} />
-                        
                     )}
                     <div>
                         {user && (
                             <>
                             <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
-                            <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Diosito"}</h4>
+                            <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
                             </>
                         )}
                     </div>
@@ -183,7 +182,7 @@ const Dashboard = () => {
                         <FontAwesomeIcon icon={faKey} />
                         <h3>Cambiar Contraseña</h3>
                     </button>
-                    <button onClick={() => authService.logout(router)}>
+                    <button onClick={() => setShowConfirmLogout(true)}>
                         <FontAwesomeIcon icon={faRightFromBracket} />
                         <h3>Cerrar sesión</h3>
                     </button>
@@ -205,11 +204,20 @@ const Dashboard = () => {
                             <input type="password" name="confirm_password" id="confirm_password" onChange={changePassword.handleChange} value={changePassword.values.confirm_password} />
                         </div>
                         <div className="mb-1">
-                            <button type="submit">Cambiar Contraseña</button>
+                            <button type="button" onClick={() => { setShowPasswordUpdate(false); setShowUserOptions(true); changePassword.resetForm() }}>
+                                <FontAwesomeIcon icon={faCancel} />
+                                &nbsp;Cancelar
+                            </button>
+                            <button type="submit">
+                                <FontAwesomeIcon icon={faCheck} />
+                                &nbsp;Confirmar
+                            </button>
+
                         </div>
                     </form>
                 </div>
             </Modal>
+            <ActionModal showModal={showConfirmLogout} onCancel={() => setShowConfirmLogout(false)} onConfirm={() => { authService.logout(router)}} title={"Cerrar sesión"} className={"confirm-modal"} body={"¿Está seguro que desea cerrar sesión?"} />
         </>
     )
 }

@@ -1,6 +1,6 @@
 import { faAdd, faCancel, faCheck } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import Modal from "./modal"
+import Modal from "./Modal"
 
 const ActionModal = ({title, body, showModal, onCancel, onConfirm, className} : {title: string, body : string, showModal : boolean, onCancel : Function, onConfirm : Function, className? : string}) => {    
 

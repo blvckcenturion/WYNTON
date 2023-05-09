@@ -4,8 +4,8 @@ import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react"
 import { toast } from "react-toastify";
-import ActionModal from "../../utils/components/actionModal";
-import Modal from "../../utils/components/modal";
+import ActionModal from "../../utils/components/ActionModal";
+import Modal from "../../utils/components/Modal";
 import createImage from "../../utils/functions/createImage";
 import elementSearch from "../../utils/functions/elementSearch";
 import authService from "../services/auth";

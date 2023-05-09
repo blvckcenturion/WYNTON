@@ -5,6 +5,7 @@ import { toast } from "react-toastify"
 import displayError from "../../utils/functions/displayError"
 import categoryService from "./category"
 import { z } from "zod"
+import createImage from "../../utils/functions/createImage"
 
 class productService {
 
@@ -18,7 +19,8 @@ class productService {
         }).min(0, {message: "El precio del producto debe ser mayor o igual a 0."}).positive({message: "El precio del producto debe ser mayor o igual a 0."}),
         description: z.string().max(100, {message: "La descripcion del producto debe ser menor o igual a 100 caracteres."}).trim().optional(),
         categoryId: z.number().optional().nullable(),
-        photo: z.string().optional()
+        photo: z.string().optional(),
+        photoSrc: z.string().optional()
     })
 
     // Load all active products from the database 
@@ -93,8 +95,31 @@ class productService {
         }
     }
 
+    public static async create(product: any) { 
+        try {
+            if (product.photo !== "" && product.photoSrc !== "") { 
+                product.photo = await createImage("products", product.photoSrc)
+            }
+            let response : any = await invoke("create_product", product)
+            return await JSON.parse(response)
+        } catch(e : any) {
+            console.log(e)
+            displayError(e)
+            return null
+        }
+    }
+
     public static async update(product : any) {
-        try{
+        try {
+            if (product.photoReplaced && product.photoSrc !== "") { 
+                product.photo = await createImage("products", product.photoSrc)
+            } else if(product.photoReplaced && product.photoSrc === "") {
+                product.photo = null
+            } else {
+                product.photo = product.photo_path
+            }
+
+
             await invoke("update_product", product)
             toast.success("Producto actualizado de forma exitosa")
         } catch(e : any) {

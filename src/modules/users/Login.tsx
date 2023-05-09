@@ -18,13 +18,11 @@ function Login() {
       localStorage.removeItem("userId")
     }
   }, [])
-//Usuario: danigaydangly168686
-// Contraseña: rbCLzHpStT9L
 
     const login = useFormik({
         initialValues: {
           username: "admin",
-          password: "sexoman",
+          password: "admin",
         },
         onSubmit: async (values) => {
           try {

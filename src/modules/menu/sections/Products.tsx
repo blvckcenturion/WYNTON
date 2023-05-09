@@ -7,12 +7,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { faFileCirclePlus, faAngleUp, faAngleDown, faFileImage, faAdd, faSave, faTrash, faEdit, faCancel} from '@fortawesome/free-solid-svg-icons'
-import Modal from '../../utils/components/modal'
+import Modal from '../../utils/components/Modal'
 import createImage from '../../utils/functions/createImage'
 import { exists } from '@tauri-apps/api/fs'
 import capitalize from '../../utils/functions/capitalize'
 import elementSearch from '../../utils/functions/elementSearch'
-import ActionModal from '../../utils/components/actionModal'
+import ActionModal from '../../utils/components/ActionModal'
 import productService from '../services/product'
 import categoryService from '../services/category'
 import comboService from '../../combos/services/combo'
@@ -203,31 +203,27 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
     },
     onSubmit: async (values) => {
       try {
-        let prod = productService.productValidationSchema.parse({...values, categoryId: parseInt(values.categoryId)}); 
+        let prod = productService.productValidationSchema.parse({...values, categoryId: parseInt(values.categoryId), photo: photo, photoSrc: photoSrc}); 
         prod.name = prod.name.toLowerCase();
         prod.description = prod.description?.toLowerCase();
         prod.categoryId = prod.categoryId === -1 ? undefined : prod.categoryId;
       
-        await invoke("find_by_name_product", {name: prod.name}).then((res : any) => {
-          res = JSON.parse(res)
-          if (res.length > 0) {
-            throw new Error("Ya existe un producto con ese nombre.")
-          }
-        })
+        let filtered = products.filter((el : any) => {if (el.name.trim().toLowerCase() == prod.name.trim().toLowerCase()) return el} );
 
-        if(photo !== "" && photoSrc !== "") {
-          prod.photo = await createImage("products", photoSrc);     
+        if (filtered.length > 0) {
+          throw new Error("Ya existe un producto con ese nombre.");
         }
-        let res : string = await invoke("create_product", prod);
         
-        let product : any = JSON.parse(res);
-        if (product){
+        let res: any = await productService.create(prod);
+
+        if (res){
           toast.success("Producto agregado exitosamente");
           loadProducts();
           setShowProductForm(false);
         } else {
           toast.error("No se pudo agregar el producto");
         }
+
       } catch(e: any) {
         console.log(e)
         if (typeof e.issues !== "undefined"){
@@ -307,16 +303,7 @@ const ProductForm = ({ categories, setShowProductForm, loadProducts, product, pr
 
   // Invoker function that will update the selected product
   const confirmEditProduct = async () => {
-    let prod = productSave;
-
-    if (photoReplaced && photo != "" && photoSrc != "") {
-      prod.photo = await createImage("products", photoSrc);
-    } else {
-      prod.photo = null;
-    }
-    console.log(prod)
-    await productService.update({id: product?.id, name: prod.name, description: prod.description, price: prod.price, categoryId: prod.categoryId, photo: photoReplaced ? prod.photo : product.photo_path})
-
+    await productService.update({id: product?.id, name: productSave.name, description: productSave.description, price: productSave.price, categoryId: productSave.categoryId, photo: photo, photoSrc: photoSrc, photoReplaced, photo_path: product?.photo_path});
     loadProducts();
     setShowProductForm(false);
     setProduct(null);

@@ -6,8 +6,8 @@ import { toast } from "react-toastify";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd, faCancel, faEdit, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
 import elementSearch from '../../utils/functions/elementSearch';
-import Modal from '../../utils/components/modal';
-import ActionModal from '../../utils/components/actionModal';
+import Modal from '../../utils/components/Modal';
+import ActionModal from '../../utils/components/ActionModal';
 import categoryService from '../services/category';
 import productService from '../services/product';
 
