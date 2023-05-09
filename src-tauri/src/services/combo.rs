@@ -22,26 +22,28 @@ pub fn find_by_name(conn: &mut SqliteConnection, name: &str) -> String{
 }
 
 pub fn update(conn: &mut SqliteConnection, item: &ComboUpdate, id: i32){
-    use crate::schema::combo::dsl::{combo, denomination, updatedAt, price};
+    use crate::schema::combo::dsl::{combo, denomination, price, updated_at, photo};
 
     let _ = diesel::update(combo.find(id))
         .set((
             denomination.eq(item.denomination),
             price.eq(item.price),
-            updatedAt.eq(Utc::now().naive_utc())
+            photo.eq(item.photo),
+            updated_at.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();
     let _combo: Combo = combo.find(id).first::<Combo>(conn).unwrap_or_else(|_| panic!("Unable to find post {}", id));
+
 }
 
 pub fn delete(conn: &mut SqliteConnection, id: i32){
-    use crate::schema::combo::dsl::{combo, updatedAt, status};
+    use crate::schema::combo::dsl::{combo, updated_at, status};
 
     let _ = diesel::update(combo.find(id))
         .set((
             status.eq(0),
-            updatedAt.eq(Utc::now().naive_utc())
+            updated_at.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();

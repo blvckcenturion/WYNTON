@@ -6,7 +6,7 @@
 #[macro_use]
 extern crate diesel;
 
-use std::{sync::Mutex, borrow::Borrow};
+use std::{sync::Mutex};
 use diesel::SqliteConnection;
 use tauri::RunEvent;
 use tauri::Manager;

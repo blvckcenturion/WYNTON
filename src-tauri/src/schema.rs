@@ -15,9 +15,10 @@ diesel::table! {
         id -> Integer,
         denomination -> Text,
         price -> Float,
+        photo -> Nullable<Text>,
         status -> Integer,
-        createdAt -> Timestamp,
-        updatedAt -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Nullable<Timestamp>,
     }
 }
 
@@ -28,8 +29,8 @@ diesel::table! {
         product_id -> Integer,
         quantity -> Integer,
         status -> Integer,
-        createdAt -> Timestamp,
-        updatedAt -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Nullable<Timestamp>,
     }
 }
 

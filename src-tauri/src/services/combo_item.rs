@@ -22,12 +22,11 @@ pub fn find_by_combo_id(conn: &mut SqliteConnection, combo_id: &i32) -> String{
 }
 
 pub fn update(conn: &mut SqliteConnection, item: &ComboItemUpdate, id: i32){
-    use crate::schema::combo_item::dsl::{combo_item, quantity, updatedAt};
-
+    use crate::schema::combo_item::dsl::{combo_item, quantity, updated_at};
     let _ = diesel::update(combo_item.find(id))
         .set((
             quantity.eq(item.quantity),
-            updatedAt.eq(Utc::now().naive_utc())
+            updated_at.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();
@@ -35,24 +34,24 @@ pub fn update(conn: &mut SqliteConnection, item: &ComboItemUpdate, id: i32){
 }
 
 pub fn delete(conn: &mut SqliteConnection, id: i32){
-    use crate::schema::combo_item::dsl::{combo_item, updatedAt, status, combo_id};
+    use crate::schema::combo_item::dsl::{combo_item, updated_at, status, combo_id};
     // delete combo item by combo id
     let _ = diesel::update(combo_item.filter(combo_id.eq(id)))
         .set((
             status.eq(0),
-            updatedAt.eq(Utc::now().naive_utc())
+            updated_at.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();
 }
 
 pub fn delete_by_product(conn: &mut SqliteConnection, id: i32){
-    use crate::schema::combo_item::dsl::{combo_item, updatedAt, status, product_id};
+    use crate::schema::combo_item::dsl::{combo_item, updated_at, status, product_id};
     // delete all combo items that have product_id
     let _ = diesel::update(combo_item.filter(product_id.eq(id)))
         .set((
             status.eq(0),
-            updatedAt.eq(Utc::now().naive_utc())
+            updated_at.eq(Utc::now().naive_utc())
         ))
         .execute(conn)
         .unwrap();
