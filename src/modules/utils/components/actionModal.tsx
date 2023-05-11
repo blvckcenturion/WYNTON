@@ -10,13 +10,13 @@ const ActionModal = ({title, body, showModal, onCancel, onConfirm, className} : 
                 <p>{body}</p>
             </div>
             <div className="modal-footer">
-                <button className="btn btn-cancel" onClick={() => onCancel()}>
-                    <FontAwesomeIcon icon={faCancel} />
-                    &nbsp;Cancelar
-                </button>
                 <button className="btn btn-confirm" onClick={() => onConfirm()}>
                     <FontAwesomeIcon icon={faCheck} />
                     &nbsp;Confirmar
+                </button>
+                <button className="btn btn-cancel" onClick={() => onCancel()}>
+                    <FontAwesomeIcon icon={faCancel} />
+                    &nbsp;Cancelar
                 </button>
             </div>
         </Modal>

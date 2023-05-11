@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Logo from "../../assets/logo";
 import NavigationOption from "./NavigationOption";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBellConcierge, faCancel, faCartShopping, faCheck, faKey, faObjectGroup, faReceipt, faRightFromBracket, faSave, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBellConcierge, faCancel, faCartShopping, faCheck, faGears, faKey, faObjectGroup, faReceipt, faRightFromBracket, faSave, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Menu from "../menu/Menu";
 import Combos from "../combos/Combos";
@@ -123,36 +123,75 @@ const Dashboard = () => {
         }
         return <></>
     }
+    //Usuario: sapoman123168279
+    //Contraseña: n9YUuuJQmmBh
+    const Heading = () => {
+        return (
+            <div>
+                <Logo/>
+                <h1>WYNTON</h1>
+            </div>
+        )
+    }
+    
+    const UserDetails = () => {
+        return (
+            <div className="user-details" onClick={() => setShowUserOptions(true)}>
+                {user && user.photo ? (
+                    <img src={user.photo} alt="" />
+                ) : (
+                    <FontAwesomeIcon icon={faUserCircle} />
+                )}
+                <div>
+                    {user && (
+                        <>
+                        <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
+                        <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
+                        </>
+                    )}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <>
-        <div className="dashboard-page page">
-            <div className="dashboard-sidebar">
-                <div className="shadow appearance-none rounded">
-                    <div className="dashboard-header">
-                        <Logo/>
-                        <h1 className="text-primary">WYNTON</h1>
+            <div className={`dashboard-page page ${user && user.user_type && (user.user_type == 1 || user.user_type == 3) ? "admin-layout" : "employee-layout"}`}>
+                {user && user.user_type && (user.user_type == 1 || user.user_type == 3) ? (
+                    <div className="dashboard-sidebar">
+                        <div>
+                            <Heading/>
+                            <div>
+                                {<UserOptions/>}
+                            </div>
+                        </div>
+                        <UserDetails/>
                     </div>
-                    <div className="dashboard-items">
-                        {<UserOptions/>}
+                ) : (
+                    <div className="dashboard-header" >
+                            <Heading />
+                            <div onClick={() => setShowUserOptions(true)}>
+                                <FontAwesomeIcon icon={faGears} /> &nbsp;
+                                Haz click aca para ver ajustes
+                            </div>
+                        <div className="user-details" >
+                            {user && user.photo ? (
+                                <img src={user.photo} alt="" />
+                            ) : (
+                                <FontAwesomeIcon icon={faUserCircle} />
+                            )}
+                            <div>
+                                {user && (
+                                        <>
+                                        <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
+                                        <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
+                                        </>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div className="dashboard-user-details shadow appearance-none rounded" onClick={() => setShowUserOptions(true)}>
-                    {user && user.photo ? (
-                        <img src={user.photo} alt="" />
-                    ) : (
-                        <FontAwesomeIcon icon={faUserCircle} />
-                    )}
-                    <div>
-                        {user && (
-                            <>
-                            <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
-                            <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
+                )}
+                
                 <div className="dashboard-content">
                     {user && user.user_type && (user.user_type == 1 || user.user_type == 3) ? (
                         <>
@@ -167,7 +206,6 @@ const Dashboard = () => {
                             {tab == 1 && <Orders user={user} />}
                         </>
                     )}
-                    
                 </div>
             </div>
             <Modal className={"user-options-modal"} title={"Opciones de usuario"} showModal={showUserOptions} onClose={() => setShowUserOptions(false)}>
@@ -204,13 +242,13 @@ const Dashboard = () => {
                             <input type="password" name="confirm_password" id="confirm_password" onChange={changePassword.handleChange} value={changePassword.values.confirm_password} />
                         </div>
                         <div className="mb-1">
-                            <button type="button" onClick={() => { setShowPasswordUpdate(false); setShowUserOptions(true); changePassword.resetForm() }}>
-                                <FontAwesomeIcon icon={faCancel} />
-                                &nbsp;Cancelar
-                            </button>
                             <button type="submit">
                                 <FontAwesomeIcon icon={faCheck} />
                                 &nbsp;Confirmar
+                            </button>
+                            <button type="button" onClick={() => { setShowPasswordUpdate(false); setShowUserOptions(true); changePassword.resetForm() }}>
+                                <FontAwesomeIcon icon={faCancel} />
+                                &nbsp;Cancelar
                             </button>
 
                         </div>
@@ -221,5 +259,7 @@ const Dashboard = () => {
         </>
     )
 }
+
+
 
 export default Dashboard;

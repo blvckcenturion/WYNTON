@@ -147,7 +147,6 @@ const Orders = ({user} : {user: any}) => {
             return (
                 <ProductCard key={product.id} id={product.id} className={`product-card ${product.qty > 0 ? "selected" : ""}`} photo={product.photo} name={product.name} qty={product.qty} handleChangeQty={handleChangeProductQty}>
                     <h4>{product.name}</h4>
-                    <p className="desc">{product.description ? product.description.length > 53 ? product.description.slice(50) + "..." : product.description : "N/A"}</p>
                     <p>{product.price.toFixed(2)} BS</p>
                 </ProductCard>
             )
@@ -156,7 +155,11 @@ const Orders = ({user} : {user: any}) => {
     
     const showCombos = (combos: any[]) => {
         if (combos.length === 0)
-            return <h4 className="no-results">{(productSearchTerm === "" && productCategory == -2) ? "No existen combos registrados." : "No se encontraron resultados para tu busqueda."}</h4>
+            return (
+                <div className="no-results">
+                    <h4>{(productSearchTerm === "" && productCategory == -2) ? "No existen combos registrados." : "No se encontraron resultados para tu busqueda."}</h4>
+                </div>
+            )
         return combos.map((combo: any,) => {
             return (
                 <ProductCard key={combo.id} id={combo.id} className={`combo-card ${combo.qty > 0 ? "selected" : ""}`} photo={combo.photo} name={combo.denomination} qty={combo.qty} handleChangeQty={handleChangeComboQty}>
@@ -213,30 +216,30 @@ const Orders = ({user} : {user: any}) => {
         return (
             <>
                 <div className="orders-module">
-                    <div className={`products-section ${(getSelectedProducts().length || getSelectedCombos().length) ? "" : "empty"}`}>
+                    <div className={`products-section`}>
                         <div>
                             <form className={`${productType ? "combos" : "products"}`}>
                                 <div>
-                                    <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productName">
+                                    <label htmlFor="productName">
                                         Nombre
                                     </label>
                                     <input placeholder={`Buscar ${productType ? "combos" : "productos"}`} className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={!productType ? handleProductSearch : handleComboSearch} value={!productType ? productSearchTerm : combosSearchTerm} />
                                 </div>
                                 <div>
-                                    <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productType">
+                                    <label htmlFor="productType">
                                         Tipo
                                     </label>
-                                    <select className="rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductType} value={productType}>
+                                    <select id="productType" onChange={handleProductType} value={productType}>
                                         <option value="0">Productos</option>
                                         <option value="1">Combos</option>
                                     </select>
                                 </div>
                                 {!productType ? (
                                     <div>
-                                        <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="productType">
+                                        <label htmlFor="productType">
                                             Categoria
                                         </label>
-                                        <select className="w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productType" onChange={handleProductCategory} value={productCategory}>
+                                        <select id="productType" onChange={handleProductCategory} value={productCategory}>
                                             <option value="-2">Todos</option>
                                             <option value="-1">Sin categoria</option>
                                             {categories.map((category: any) => {
@@ -254,39 +257,41 @@ const Orders = ({user} : {user: any}) => {
                             }
                         </div>
                     </div>
-                    {(getSelectedProducts().length || getSelectedCombos().length) ? (
-                        <div className="place-order-section">
+                    <div className="place-order-section">
+                        <div>
                             <div>
-                                <div>
-                                    <h3>Resumen de orden</h3>
-                                </div>
-                                <div>
-                                    {getSelectedProducts().map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
-                                    {getSelectedCombos().map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
-                                </div>
+                                <h3>Ordenes Pendientes</h3>
                             </div>
                             <div>
-                                <h3>Detalle</h3>
-                                <div>
-                                    <h4>Productos</h4>
-                                    <p>
-                                        {getSelectedProducts().reduce((acc: number, product: any) => acc + (product.qty), 0)}
-                                    </p>
-                                    <h4>Combos</h4>
-                                    <p>
-                                        {getSelectedCombos().reduce((acc: number, combo: any) => acc + (combo.qty), 0)}
-                                    </p>
-                                    <h4>Total</h4>
-                                    <p>
-                                        {getTotal().toFixed(2)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <button onClick={() => setConfirmOrderModal(true)}>Crear orden</button>
-                                </div>
+                                
+                            </div>
+
+                        </div>
+                        <div>
+                            <div>
+                                <h3>Resumen</h3>
+                            </div>
+                            <div>
+                                {getSelectedProducts().map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
+                                {getSelectedCombos().map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
+                                {getSelectedCombos().length + getSelectedProducts().length === 0 && (
+                                    <div className="no-results">
+                                        <h4>No hay productos seleccionados.</h4>
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                
+                                <h4>Total</h4>
+                                <p>
+                                    {getTotal().toFixed(2)}
+                                </p>
+                            </div>
+                            <div>
+                                <button className={`${(getSelectedCombos().length + getSelectedProducts().length )=== 0 ? "disabled" : ""}`} disabled={true} onClick={() => setConfirmOrderModal(true)}>Crear orden</button>
                             </div>
                         </div>
-                    ) : null}
+                    </div>
                 </div>
                 <Modal className="confirm-order-modal" title={"Confirmacion de orden"} showModal={confirmOrderModal} onClose={() => setConfirmOrderModal(false)}>
                     <div>
@@ -319,7 +324,7 @@ const Orders = ({user} : {user: any}) => {
                             </div>
                         </div>
 
-                        <button onClick={handleCreateOrder}> <FontAwesomeIcon icon={faCheckCircle} /> &nbsp;Crear orden</button>
+                        <button className={`${(getSelectedCombos().length + getSelectedProducts().length )=== 0 ? "disabled" : ""}`} onClick={handleCreateOrder}> <FontAwesomeIcon icon={faCheckCircle} /> &nbsp;Crear orden</button>
                     </div>
                 </Modal>
             </>

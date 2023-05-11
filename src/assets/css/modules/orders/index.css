@@ -11,21 +11,16 @@
     justify-content: space-around;
 
     > div{
-        h3{
-            color: var(--accent-color-1);
-            font-size: 1.3rem;
-            font-family: var(--main-font);
-        }
+
         transition: all 0.5s ease;
+        
         &.products-section{
             @apply shadow;
             border-radius: 10px;
             background: var(--bg-accent);
             height: 100%;
-            width: 68%;
-            &.empty{
-                width: 99%;
-            }
+            width: 62%;
+
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -62,39 +57,30 @@
                 }
                 &:nth-child(2){
                     width: 100%;
-                    
                     grid-template-columns: repeat(2, 1fr);
-                    &.empty{
-                        grid-template-columns: repeat(3, 1fr);
-                    }
 
                     @media screen and (min-width: 1200px) {
                         grid-template-columns: repeat(3, 1fr);
-                        &.empty{
-                            grid-template-columns: repeat(4, 1fr);
-                        }
                     }
 
                     @media screen and (min-width: 1468px) {
                         grid-template-columns: repeat(4, 1fr);
-                        &.empty{
-                            grid-template-columns: repeat(5, 1fr);
-                        }
                     }
-
+                    
+                    
                     div.no-results{
                         display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-
-                        width: 100%;
-                        grid-column: 1 / -1;
                         h4{
                             text-align: center;
                             color: var(--accent-color-1);
                             font-size: 2rem;
                         }
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        grid-column: 1 / -1;
+
                     }
 
                     height:80%;
@@ -125,11 +111,16 @@
         &.place-order-section{
             
             height: 100%;
-            width: 29%;
+            width: 35%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-around;
+            h3{
+                color: var(--accent-color-1);
+                font-size: 1.3rem;
+                font-family: var(--main-font);
+            }
             > div{
                 width: 100%;
                 display: flex;
@@ -143,20 +134,18 @@
                             @apply shadow;
                             width: 100%;
                             text-align: center;
-                            height: 10%;
+                            height: 18%;
                             border-radius: 10px;
                             background: var(--bg-accent);
                             display: flex;
                             flex-direction: column;
                             align-items: center;
                             justify-content: center;
-                            
                             margin-bottom: 10px;
                         }
                         &:nth-child(2){
-
                             margin-top: 10px;
-                            height: 90%;
+                            height: 82%;
                             width: 100%;
                             overflow-y: auto;
                             scrollbar-gutter: stable;
@@ -178,44 +167,92 @@
                         }
                     }
                     margin-bottom: 10px;
-                    height:65%;
+                    height:50%;
                 }
                 &:nth-child(2){
-                    @apply shadow;
-                    border-radius: 10px;
-                    background: var(--bg-accent);
                     margin-top: 10px;
-                    height:35%;
+                    height:50%;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    justify-content: space-evenly;
+                    justify-content: space-between;
                     > div{
                         width: 100%;
+                        height:15%;
                         &:first-of-type{
-                            height: 50%;
-                            display: grid;
+                            @apply shadow;
+                            background-color: var(--bg-accent);
+                            border-radius: 8px;
+                            display: flex;
                             grid-template-columns: repeat(2, 1fr);
                             flex-direction: column;
                             align-items: center;
                             justify-content: space-evenly;
                             gap: 10px;
                             color: var(--accent-color-1);
+                            margin-bottom: 10px;
+                        }
+                        &:nth-of-type(2){
+                            div.no-results{
+                                display: flex;
+                                h4{
+                                    text-align: center;
+                                    color: var(--accent-color-1);
+                                    font-size: 1.2rem;
+                                }
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                width: 100%;
+                                height: 100%;
+                                -ms-word-break: keep-all;
+                                word-break: keep-all;
+                            
+                                /* Non standard for WebKit */
+                                word-break: keep-word;
+                            }
+                            height:40%;
+                            overflow-y: auto;
+                            scrollbar-gutter: stable;
+                            &::-webkit-scrollbar {
+                                width: 10px;
+                            }
+                            
+                            &::-webkit-scrollbar-track {
+                                background-color: transparent;
+                            }
+                            
+                            &::-webkit-scrollbar-thumb {
+                                background-color: var(--accent-color-1);
+                                opacity: 0.5;
+                                border-radius: 10px;
+                                margin: 10px 0;
+                                box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                            }
+                        }
+                        &:nth-of-type(3){
+                            margin-top: 10px;
                             h4{
                                 margin-left: 15px;
                                 font-size: 1rem;
                                 text-align: start;
                                 font-family: var(--main-font);
                             }
-                        }
-                        &:nth-of-type(2){
+                            background-color: var(--bg-accent);
+                            border-radius: 8px;
+                            @apply shadow;
+                            color: var(--accent-color-1);
                             display: flex;
-                            flex-direction: column;
+                            flex-direction: row;
                             align-items: center;
                             justify-content: space-evenly;
+                        }
+                        &:nth-of-type(4){
+                            
                             button{
+                                margin-top:2px;
                                 transition: all 0.3s ease-in-out;
-                                width: 80%;
+                                width: 100%;
                                 color: white;
                                 background: var(--accent-color-1);
                                 border-radius: 10px;
@@ -224,6 +261,7 @@
                                     background: var(--main-color);
                                 }
                             }
+
                         }
                         
                     }
@@ -295,7 +333,6 @@
     .confirm-order-modal{
         > div{
             max-height:90%;
-            /* height: 80%;  */
            > div{
                 width: 100%;
                 display: flex;

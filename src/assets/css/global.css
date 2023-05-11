@@ -26,6 +26,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+  }
+
+  .dashboard-page{
     -ms-word-break: break-all;
     word-break: break-all;
 
@@ -36,7 +39,6 @@
     -moz-hyphens: auto;
     hyphens: auto;
   }
-
   body{
     transition: all .3s ease-in-out;
     -webkit-user-select: none; /* Safari */        
@@ -630,7 +632,13 @@ div.item-table {
 }
 
 table{
-  text-align: center;
-  -ms-word-break: break-word;
-  word-break: break-word;
+  &.table-auto{
+    text-align: center;
+    -ms-word-break: break-word;
+    word-break: break-word;
+    thead{
+      -ms-word-break: keep-all;
+      word-break: keep-all;
+    }
+  }
 }

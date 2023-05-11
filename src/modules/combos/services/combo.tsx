@@ -77,6 +77,7 @@ class comboService{
         try {
             await invoke("delete_combo", { id })
             await invoke("delete_combo_item", { id })
+            toast.success("Combo eliminado de forma exitosa")
             return true
         } catch (e: any) {
             console.log(e)
