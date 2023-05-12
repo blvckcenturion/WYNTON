@@ -77,7 +77,8 @@ fn main() {
             commands::order::create_order,
             commands::order::create_order_item,
             commands::order::get_all_order,
-            commands::order::get_all_by_order_id
+            commands::order::get_all_by_order_id,
+            commands::order::update_order_status,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

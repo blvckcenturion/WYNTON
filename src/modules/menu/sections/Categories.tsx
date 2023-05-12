@@ -155,7 +155,7 @@ const CategoryForm = ({setShowCategoryForm, loadCategories, category, categories
           }
         });
         await invoke("create_category", cat).then((res) => {
-          toast.success("Categoria agregada correctamente.");
+          toast.success("Categoria agregada correctamente");
         });
         await loadCategories();
         setShowCategoryForm(false);

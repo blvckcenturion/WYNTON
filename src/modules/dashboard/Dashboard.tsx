@@ -78,11 +78,11 @@ const Dashboard = () => {
 
                 if (user) { 
                     if (l.password === l.old_password) {
-                        throw new Error("La contraseña nueva no puede ser igual a la anterior.");
+                        throw new Error("La contraseña nueva no puede ser igual a la anterior");
                     }
                     const updatedUser = await authService.updateUserPassword(user.id, l.password);
                     if (updatedUser) {
-                        toast.success("Contraseña actualizada correctamente, vuelva a iniciar sesión.");
+                        toast.success("Contraseña actualizada correctamente, vuelva a iniciar sesión");
                         localStorage.removeItem("userId");
                         router.push("/");
                     }

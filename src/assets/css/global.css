@@ -420,6 +420,7 @@ div.item-table {
     border: 1px solid var(--main-color);
     border-collapse: collapse;
     position: relative;
+    text-align: center;
     thead{
       position: sticky;
       top: 0;
@@ -641,4 +642,9 @@ table{
       word-break: keep-all;
     }
   }
+}
+
+.modal-body{
+  ms-word-break: keep-all;
+  word-break: keep-all;
 }

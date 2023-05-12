@@ -49,6 +49,7 @@ diesel::table! {
     orders (id) {
         id -> Integer,
         user_id -> Integer,
+        payment_method -> Integer,
         createdAt -> Timestamp,
         updatedAt -> Nullable<Timestamp>,
         status -> Integer,

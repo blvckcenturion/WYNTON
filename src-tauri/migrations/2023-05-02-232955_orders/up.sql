@@ -1,8 +1,12 @@
 -- Your SQL goes here
+-- payment_method: 
+-- 1: card
+-- 2: qr
+-- 3: cash
 CREATE TABLE orders(
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    -- payment_method INTEGER NOT NULL,
+    payment_method INTEGER NOT NULL,
     createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP,
     status INTEGER NOT NULL DEFAULT 1,

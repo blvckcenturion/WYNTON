@@ -9,7 +9,6 @@ class orderService {
             let response: any = await invoke("create_order", order)
             response = await JSON.parse(response)
             order.id = response
-            console.log(order)
             order.items.forEach(async (i: any) => { 
                 let prod = {orderId: order.id, productId: i.productId, comboId: i.comboId, quantity: i.quantity, price: i.price}
                 await invoke("create_order_item", prod)
@@ -22,7 +21,7 @@ class orderService {
         }
     }
 
-    public static async load(): Promise<any[]> {
+    public static async load(orderStatus?: number ): Promise<any[]> {
         try {
             let prod: string = await invoke("get_all_product_registered")
             let products: any[] = await JSON.parse(prod)
@@ -30,7 +29,7 @@ class orderService {
             let comb: string = await invoke("get_all_combo_registered")
             let combos: any[] = await JSON.parse(comb)
 
-            const response: string = await invoke("get_all_order")
+            let response : string = await invoke("get_all_order", {orderStatus: typeof orderStatus !== "undefined" ? orderStatus : 1})
             let orders: any[] = await JSON.parse(response)
 
             orders = await orders.map(async (order) => {
@@ -64,6 +63,16 @@ class orderService {
             console.log(e)
             displayError(e)
             return []
+        }
+    }
+
+    public static async updateStatus(order: any) {
+        try {
+            await invoke("update_order_status", order)
+            toast.success(`Orden #${order.id} ${order.status ? "finalizada" : "cancelada"} de forma exitosa`)
+        } catch (e: any) {
+            console.log(e)
+            displayError(e)
         }
     }
 }

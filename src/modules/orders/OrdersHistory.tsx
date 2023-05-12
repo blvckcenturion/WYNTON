@@ -21,7 +21,8 @@ const OrderAnalytics = () => {
     useEffect(() => {
         (async () => {
             let users: any[] = await authService.load()
-            let orders: any[] = await orderService.load()
+            let orders: any[] = await orderService.load(2)
+            console.log(orders)
             orders = orders.map((order) => {
                 let user = users.find((user) => user.id === order.user_id)
                 return {
@@ -31,6 +32,7 @@ const OrderAnalytics = () => {
                     total: order.items.reduce((acc : number, item : any) => { 
                         return acc + (item.price * item.quantity)
                     }, 0),
+                    paymentMethod: order.payment_method,
                     items: order.items.map((item: any) => { 
                         return {
                             price: item.price,
@@ -313,6 +315,7 @@ const OrderAnalytics = () => {
                                 <th>Usuario</th>
                                 <th>Productos</th>
                                 <th>Total</th>
+                                <th>Metodo de pago</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -335,6 +338,7 @@ const OrderAnalytics = () => {
                                         }
                                         </td>
                                         <td>{order.total.toFixed(2)} BS</td>
+                                        <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
                                     </tr>
                                 )
                             })}

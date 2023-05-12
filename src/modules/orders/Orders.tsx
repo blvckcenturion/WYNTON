@@ -4,12 +4,13 @@ import categoryService from "../menu/services/category";
 import capitalize from "../utils/functions/capitalize";
 import comboService from "../combos/services/combo";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faFileImage } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faCircleCheck, faEdit, faFileImage, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "./components/ProductCard";
 import elementSearch from "../utils/functions/elementSearch";
 import Modal from "../utils/components/Modal";
 import orderService from "./services/orders";
 import { toast } from "react-toastify";
+import ActionModal from "../utils/components/ActionModal";
 
 
 const Orders = ({user} : {user: any}) => {
@@ -17,12 +18,28 @@ const Orders = ({user} : {user: any}) => {
     const [combosSearchTerm, setCombosSearchTerm] = useState<string>("")
     const [productType, setProductType] = useState<number>(0)
     const [productCategory, setProductCategory] = useState<number>(-2)
-    const [products, setProducts] = useState<any[]>([])
-    const [combos, setCombos] = useState<any[]>([])
+    const [allProducts, setAllProducts] = useState<any[]>([])
+    const [allCombos, setAllCombos] = useState<any[]>([])
+    const [productsCreate, setProductsCreate] = useState<any[]>([])
+    const [productsEdit, setProductsEdit] = useState<any[]>([])
+    const [combosCreate, setCombosCreate] = useState<any[]>([])
+    const [combosEdit, setCombosEdit] = useState<any[]>([])
     const [categories, setCategories] = useState<any[]>([])
-    const [productsSearch, setProductsSearch] = useState<any[]>([])
-    const [combosSearch, setCombosSearch] = useState<any[]>([])
+    const [productsSearchCreate, setProductsSearchCreate] = useState<any[]>([])
+    const [combosSearchCreate, setCombosSearchCreate] = useState<any[]>([])
+    const [productsSearchEdit, setProductsSearchEdit] = useState<any[]>([])
+    const [combosSearchEdit, setCombosSearchEdit] = useState<any[]>([])
     const [confirmOrderModal, setConfirmOrderModal] = useState<boolean>(false)
+    const [pendingOrders, setPendingOrders] = useState<any[]>([])
+    const [paymentMethod, setPaymentMethod] = useState<number>(1)
+    const [showCancelOrderConfirmation, setShowCancelOrderConfirmation] = useState<boolean>(false)
+    const [showEditOrderConfirmation, setShowEditOrderConfirmation] = useState<boolean>(false)
+    const [showFinalizeOrderConfirmation, setShowFinalizeOrderConfirmation] = useState<boolean>(false)
+    const [orderToFinalize, setOrderToFinalize] = useState<number>(0)
+    const [orderToCancel, setOrderToCancel] = useState<number>(0)
+    const [orderToEdit, setOrderToEdit] = useState<number>(0)
+    const [editOrderMode, setEditOrderMode] = useState<boolean>(false)
+    const [editOrder, setEditOrder] = useState<any>(null)
 
     useEffect(() => {
         (async () => {
@@ -44,7 +61,7 @@ const Orders = ({user} : {user: any}) => {
                 c.denomination = capitalize(c.denomination)
                 c.qty = 0
                 c.products = c.products.map((p: any) => {
-                    let prod = products.find((product: any) => product.id === p.id)
+                    let prod = products.find((product: any) => product.id === p.product_id)
                     return {
                         ...prod,
                         qty: p.quantity
@@ -52,10 +69,40 @@ const Orders = ({user} : {user: any}) => {
                 })
                 return c
             })
-            setProducts(products);
-            setCombos(combos);
+
+            loadPendingOrders()
+            setAllProducts(products);
+            setProductsCreate(products);
+            setProductsEdit(products);
+            setAllCombos(combos);
+            setCombosCreate(combos);
+            setCombosEdit(combos);
         })()
     }, [])
+
+    const loadPendingOrders = async () => { 
+        let pendingOrders: any[] = await orderService.load(1)
+        pendingOrders = pendingOrders.map((order: any) => {
+            order.items = order.items.map((item: any) => {
+                if (item.product_id) {
+                    let product = allProducts.find((p: any) => p.id === item.product_id)
+                    return {
+                        ...item,
+                        product: product
+                    }
+                } else {
+                    let combo = allCombos.find((c: any) => c.id === item.combo_id)
+                    return {
+                        ...item,
+                        combo: combo
+                    }
+                }
+            })
+            return order
+        })
+        setPendingOrders(pendingOrders)
+    }
+
     
     const handleProductSearch = (e: any) => {
         const productFilter = (product: any) => {
@@ -67,14 +114,14 @@ const Orders = ({user} : {user: any}) => {
                 if (product.name.trim().toLowerCase().includes(e.target.value.trim().toLowerCase()) && product.category_id === productCategory) return product
             }
         }
-        elementSearch(e, setProductSearchTerm, setProductsSearch, products, productFilter)
+        elementSearch(e, setProductSearchTerm, editOrderMode ? setProductsSearchEdit : setProductsSearchCreate, editOrderMode ? productsEdit :productsCreate, productFilter)
     }
 
     const handleComboSearch = (e: any) => {
         const comboFilter = (combo: any) => {
             if (combo.denomination.trim().toLowerCase().includes(e.target.value.trim().toLowerCase())) return combo
         }
-        elementSearch(e, setCombosSearchTerm, setCombosSearch, combos, comboFilter)
+        elementSearch(e, setCombosSearchTerm, editOrderMode ? setCombosSearchEdit : setCombosSearchCreate, editOrderMode ? combosEdit : combosCreate, comboFilter)
     }
 
     const handleProductType = (e: any) => {
@@ -85,7 +132,6 @@ const Orders = ({user} : {user: any}) => {
     const handleProductCategory = (e: any) => {
         let category = parseInt(e.target.value)
         const productFilter = (product: any) => {
-            // if (productCategory )
             if (category === -2) {
                 if (productSearchTerm === "") return product
                 else if (product.name.trim().toLowerCase().includes(productSearchTerm.trim().toLowerCase())) return product
@@ -95,45 +141,55 @@ const Orders = ({user} : {user: any}) => {
             } else {
                 if (productSearchTerm === "" && product.category_id === category) return product
                 else if (product.name.trim().toLowerCase().includes(productSearchTerm.trim().toLowerCase()) && product.category_id === category) return product
-            }
-            
+            }   
         }
-        let prod = products.filter(productFilter)
-        
-        setProductsSearch(prod)
+        if (editOrderMode) {
+            let prod = productsEdit.filter(productFilter)
+            setProductsSearchEdit(prod)
+        } else {
+            let prod = productsCreate.filter(productFilter)
+            setProductsSearchCreate(prod)
+        }
         setProductCategory(category)
     }
 
-    const getSelectedProducts = () => {
+    const getSelectedProducts = (prodList: any[]) => {
         let selectedProducts: any[] = []
-        products.forEach((p: any) => {
+        prodList.forEach((p: any) => {
             if (p.qty > 0) selectedProducts.push(p)
         })
         return selectedProducts
     }
 
-    const getSelectedCombos = () => {
+    const getSelectedCombos = (comboList: any[]) => {
         let selectedCombos: any[] = []
-        combos.forEach((c: any) => {
+        comboList.forEach((c: any) => {
             if (c.qty > 0) selectedCombos.push(c)
         })
         return selectedCombos
     }
 
-    const handleChangeProductQty = (id: number, qty: number) => {
-        console.log(qty)
-        let productsCopy = [...products]
-        let product = productsCopy.find((p: any) => p.id === id)
+    const handleChangeProductQty = (id: number, qty: number, prodList: any[]) => {
+        let productsCopy = [...prodList]
+        let product = prodList.find((p: any) => p.id === id)
+        console.log('id :',id)
         if (qty >= 0) product.qty = qty
-        setProducts(productsCopy)
+        if (!editOrderMode) {
+            setProductsCreate(productsCopy)
+        } else {
+            setProductsEdit(productsCopy)
+        }
     }
 
-    const handleChangeComboQty = (id: number, qty: number) => {
-        console.log(qty)
-        let combosCopy = [...combos]
+    const handleChangeComboQty = (id: number, qty: number, comboList: any[]) => {
+        let combosCopy = [...comboList]
         let combo = combosCopy.find((c: any) => c.id === id)
         if (qty >= 0) combo.qty = qty
-        setCombos(combosCopy)
+        if (!editOrderMode) { 
+            setCombosCreate(combosCopy)
+        } else {
+            setCombosEdit(combosCopy)
+        }
     }
 
     const showProducts = (products: any[]) => {
@@ -145,7 +201,7 @@ const Orders = ({user} : {user: any}) => {
             )
         return products.map((product: any) => {
             return (
-                <ProductCard key={product.id} id={product.id} className={`product-card ${product.qty > 0 ? "selected" : ""}`} photo={product.photo} name={product.name} qty={product.qty} handleChangeQty={handleChangeProductQty}>
+                <ProductCard items={products} key={product.id} id={product.id} className={`product-card ${product.qty > 0 ? "selected" : ""}`} photo={product.photo} name={product.name} qty={product.qty} handleChangeQty={handleChangeProductQty}>
                     <h4>{product.name}</h4>
                     <p>{product.price.toFixed(2)} BS</p>
                 </ProductCard>
@@ -157,17 +213,17 @@ const Orders = ({user} : {user: any}) => {
         if (combos.length === 0)
             return (
                 <div className="no-results">
-                    <h4>{(productSearchTerm === "" && productCategory == -2) ? "No existen combos registrados." : "No se encontraron resultados para tu busqueda."}</h4>
+                    <h4>{(combosSearchTerm === "") ? "No existen combos registrados." : "No se encontraron resultados para tu busqueda."}</h4>
                 </div>
             )
         return combos.map((combo: any,) => {
             return (
-                <ProductCard key={combo.id} id={combo.id} className={`combo-card ${combo.qty > 0 ? "selected" : ""}`} photo={combo.photo} name={combo.denomination} qty={combo.qty} handleChangeQty={handleChangeComboQty}>
+                <ProductCard items={combos} key={combo.id} id={combo.id} className={`combo-card ${combo.qty > 0 ? "selected" : ""}`} photo={combo.photo} name={combo.denomination} qty={combo.qty} handleChangeQty={handleChangeComboQty}>
                     <h4>{combo.denomination}</h4>
                     <div>
                         {combo.products.map((product: any) => {
                             return (
-                                <p>{product.name} <span className="text-accent-1">x{product.qty}</span></p>
+                                <p key={product.id}>{product.name} <span className="text-accent-1">x{product.qty}</span></p>
                             )
                         })}
                     </div>
@@ -177,160 +233,295 @@ const Orders = ({user} : {user: any}) => {
         })
     }
 
-    const getTotal = () => {
-        return getSelectedProducts().reduce((acc: number, product: any) => acc + (product.price * product.qty), 0) + getSelectedCombos().reduce((acc: number, combo: any) => acc + (combo.price * combo.qty), 0)
+    const getTotal = (prodList: any[], comboList: any[]) => {
+        return getSelectedProducts(prodList).reduce((acc: number, product: any) => acc + (product.price * product.qty), 0) + getSelectedCombos(comboList).reduce((acc: number, combo: any) => acc + (combo.price * combo.qty), 0)
     }
 
     const handleCreateOrder = async () => {
         let items: any[] = []
-        getSelectedProducts().forEach((p: any) => {
+        getSelectedProducts(productsCreate).forEach((p: any) => {
             items.push({ order_id: 1, productId: p.id, quantity: p.qty, price: p.price })
         })
-        getSelectedCombos().forEach((c: any) => {
+        getSelectedCombos(combosCreate).forEach((c: any) => {
             items.push({ order_id: 1, comboId: c.id, quantity: c.qty, price: c.price })
         })
         let order = {
             items: items,
-            userId: user.id
+            userId: user.id,
+            paymentMethod: paymentMethod
         }
 
         let res: any = await orderService.create(order)
+        console.log('id',res)
         
         if (res) {
-            toast.success("Orden creada exitosamente.")
-            setProducts(products.map((p: any) => {
+            toast.success(`Orden #${res} creada de forma exitosa`)
+            setProductsCreate(productsCreate.map((p: any) => {
                 p.qty = 0
                 return p
             }))
-            setCombos(combos.map((c: any) => {
+            setCombosCreate(combosCreate.map((c: any) => {
                 c.qty = 0
                 return c
             }))
             setConfirmOrderModal(false)
+            loadPendingOrders()
 
         } else {
             toast.error("Error al crear la orden.")
         }
         
     }
-        return (
-            <>
-                <div className="orders-module">
-                    <div className={`products-section`}>
-                        <div>
-                            <form className={`${productType ? "combos" : "products"}`}>
-                                <div>
-                                    <label htmlFor="productName">
-                                        Nombre
-                                    </label>
-                                    <input placeholder={`Buscar ${productType ? "combos" : "productos"}`} className="mb-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="productName" type="text" onChange={!productType ? handleProductSearch : handleComboSearch} value={!productType ? productSearchTerm : combosSearchTerm} />
-                                </div>
+
+    const handleCancelOrder = async (id: number) => { 
+        setShowCancelOrderConfirmation(true)
+        setOrderToCancel(id)
+    }
+
+    const handleConfirmCancelOrder = async () => { 
+        await orderService.updateStatus({id:orderToCancel, status: 0});
+        setShowCancelOrderConfirmation(false)
+        loadPendingOrders()
+        setEditOrderMode(false)
+        setEditOrder(null)
+    }
+
+    const handleFinalizeOrder = async (id: number) => { 
+        setShowFinalizeOrderConfirmation(true)
+        setOrderToFinalize(id)
+    }
+
+    const handleConfirmFinalizeOrder = async () => {
+        await orderService.updateStatus({ id: orderToFinalize, status: 2 });
+        setShowFinalizeOrderConfirmation(false)
+        loadPendingOrders()
+    }
+
+
+    const handleEditOrder = async (id: number) => { 
+        setShowEditOrderConfirmation(true)
+        setOrderToEdit(id)
+    }
+
+    const cancelEditOrder = () => {
+        (async () => {
+            setProductType(0)
+            setCombosEdit([])
+            setProductsEdit([])
+            await setEditOrderMode(false)
+            setEditOrder(null)
+            setProductSearchTerm("")
+
+        })()
+        console.log(editOrderMode)
+    }
+
+    const handleConfirmEditOrder = async () => { 
+        const editOrder = pendingOrders.find((order: any) => order.id === orderToEdit)
+        // get all the combos and products from the order and set them to the state
+        let products: any[] = allProducts.map((p: any) => { 
+            let item = editOrder.items.find((item: any) => item.product_id === p.id)
+            if (item) {
+                p.qty = item.quantity
+                return p
+            } else {
+                p.qty = 0
+                return p
+            }
+        })
+        let combos: any[] = allCombos.map((c: any) => {
+            let item = editOrder.items.find((item: any) => item.combo_id === c.id)
+            if (item) {
+                c.qty = item.quantity
+                return c
+            } else {
+                c.qty = 0
+                return c
+            }
+        })
+        setProductsEdit(products)
+        setCombosEdit(combos)
+        setShowEditOrderConfirmation(false)
+        setEditOrderMode(true)
+        setEditOrder(editOrder)
+        setProductSearchTerm("")
+            
+        }
+                    
+                    return (
+                        <>
+            <div className="orders-module">
+                <div className={`products-section`}>
+                    <div>
+                        <form className={`${productType ? "combos" : "products"}`}>
+                            <div>
+                                <label htmlFor="productName">
+                                    Nombre
+                                </label>
+                                <input placeholder={`Buscar ${productType ? "combos" : "productos"}`} id="productName" type="text" onChange={!productType ? handleProductSearch : handleComboSearch} value={!productType ? productSearchTerm : combosSearchTerm} />
+                            </div>
+                            <div>
+                                <label htmlFor="productType">
+                                    Tipo
+                                </label>
+                                <select id="productType" onChange={handleProductType} value={productType}>
+                                    <option value="0">Productos</option>
+                                    <option value="1">Combos</option>
+                                </select>
+                            </div>
+                            {!productType ? (
                                 <div>
                                     <label htmlFor="productType">
-                                        Tipo
+                                        Categoria
                                     </label>
-                                    <select id="productType" onChange={handleProductType} value={productType}>
-                                        <option value="0">Productos</option>
-                                        <option value="1">Combos</option>
+                                    <select id="productType" onChange={handleProductCategory} value={productCategory}>
+                                        <option value="-2">Todos</option>
+                                        <option value="-1">Sin categoria</option>
+                                        {categories.map((category: any) => {
+                                            return <option key={category.id} value={category.id}>{category.name}</option>
+                                        })}
                                     </select>
                                 </div>
-                                {!productType ? (
-                                    <div>
-                                        <label htmlFor="productType">
-                                            Categoria
-                                        </label>
-                                        <select id="productType" onChange={handleProductCategory} value={productCategory}>
-                                            <option value="-2">Todos</option>
-                                            <option value="-1">Sin categoria</option>
-                                            {categories.map((category: any) => {
-                                                return <option key={category.id} value={category.id}>{category.name}</option>
-                                            })}
-                                        </select>
-                                    </div>
-                                ) : null}
-                            </form>
-                        
-                        </div>
-                        <div className={(getSelectedProducts().length || getSelectedCombos().length) ? "" : "empty"}>
-                            {
-                                !productType ? showProducts(((productSearchTerm || productCategory != -2)) ? productsSearch : products) : showCombos(combosSearchTerm ? combosSearch : combos)
-                            }
-                        </div>
+                            ) : null}
+                        </form>
+                    
                     </div>
-                    <div className="place-order-section">
+                    <div>
+                            {
+                                !productType ? showProducts(((productSearchTerm || productCategory != -2)) ? editOrderMode ? productsSearchEdit : productsSearchCreate : editOrderMode ? productsEdit : productsCreate) : showCombos(combosSearchTerm ? editOrderMode ? combosSearchEdit : combosSearchCreate : editOrderMode ? combosEdit : combosCreate)
+                            }
+                    </div>
+                </div>
+                <div className={`place-order-section ${editOrderMode ? "edit-order" : ""}`}>
+                    <div>
                         <div>
+                            <h3>{editOrderMode ? `Orden #${editOrder.id}` : "Ordenes Pendientes"}</h3>
+                        </div>
+                        {!editOrderMode ? (
                             <div>
-                                <h3>Ordenes Pendientes</h3>
-                            </div>
-                            <div>
-                                
-                            </div>
+                            {pendingOrders.length ? (
+                                <>
+                                    {pendingOrders.map((order: any) => { 
+                                        return (
+                                            <OrderCard key={order.id} id={order.id} total={order.items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)} handleFinalizeOrder={handleFinalizeOrder} handleEditOrder={handleEditOrder} />
+                                        )
 
+                                    })}
+                                </>
+                            ): (
+                                <div className="no-results">
+                                    <h4>No hay ordenes pendientes.</h4>
+                                </div>
+                            )}
+                        </div>
+                        ) : null}
+                    </div>
+                    <div>
+                        <div>
+                            <h3>Resumen</h3>
                         </div>
                         <div>
-                            <div>
-                                <h3>Resumen</h3>
-                            </div>
-                            <div>
-                                {getSelectedProducts().map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
-                                {getSelectedCombos().map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
-                                {getSelectedCombos().length + getSelectedProducts().length === 0 && (
-                                    <div className="no-results">
-                                        <h4>No hay productos seleccionados.</h4>
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                
-                                <h4>Total</h4>
-                                <p>
-                                    {getTotal().toFixed(2)}
-                                </p>
-                            </div>
-                            <div>
-                                <button className={`${(getSelectedCombos().length + getSelectedProducts().length )=== 0 ? "disabled" : ""}`} disabled={true} onClick={() => setConfirmOrderModal(true)}>Crear orden</button>
-                            </div>
+                            {getSelectedProducts(editOrderMode ? productsEdit : productsCreate).map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
+                            {getSelectedCombos(editOrderMode ? combosEdit :combosCreate).map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
+                            {getSelectedCombos(editOrderMode ? combosEdit :combosCreate).length + getSelectedProducts(editOrderMode ? productsEdit : productsCreate).length === 0 && (
+                                <div className="no-results">
+                                    <h4>No hay productos seleccionados.</h4>
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <h4>Total</h4>
+                            <p>
+                                {getTotal(productsCreate, combosCreate).toFixed(2)} BS
+                            </p>
+                        </div>
+                        <div>
+                            <button disabled={(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length) === 0 && !editOrderMode || (getSelectedCombos(combosEdit).length + getSelectedProducts(productsEdit).length) === 0 && editOrderMode} onClick={() => { if (editOrderMode) { setEditOrderMode(false); setEditOrder(null) } else setConfirmOrderModal(true) }}>{editOrderMode ? "Editar detalles de" : "Crear"} orden</button>
+                            {editOrderMode ? (
+                                <>
+                                    <button onClick={() => handleCancelOrder(editOrder.id)}>Eliminar orden</button>
+                                    <button onClick={() => cancelEditOrder()}>Cancelar edicion</button>
+                                </>            
+                                                
+                            ): null}
                         </div>
                     </div>
                 </div>
-                <Modal className="confirm-order-modal" title={"Confirmacion de orden"} showModal={confirmOrderModal} onClose={() => setConfirmOrderModal(false)}>
+            </div>
+            <Modal className="confirm-order-modal" title={"Confirmacion de orden"} showModal={confirmOrderModal} onClose={() => setConfirmOrderModal(false)}>
+                <div>
                     <div>
-                        <div>
-                            <h4>¿Estas seguro que deseas crear esta orden?</h4>
-                        </div>
-                        <div>
-                            {getSelectedProducts().length ? (
-                                <div>
-                                    <h4>Productos ({getSelectedProducts().reduce((acc: number, product: any) => acc + (product.qty), 0)})</h4>
-                                    <div className={`${getSelectedCombos().length ? "" : "max"}`}>
-                                        {getSelectedProducts().map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
-                                    </div>
-                                </div>
-                            ) : null}
-                            {getSelectedCombos().length ? (
-                                <div >
-                                    <h4>Combos ({getSelectedCombos().reduce((acc: number, combo: any) => acc + (combo.qty), 0)})</h4>
-                                    <div className={`${getSelectedProducts().length ? "" : "max"}`}>
-                                        {getSelectedCombos().map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
-                                    </div>
-                                </div>
-                            ) : null}
-                        
-                            <div>
-                                <h4>Total</h4>
-                                <p>
-                                    {getTotal().toFixed(2)}
-                                </p>
-                            </div>
-                        </div>
-
-                        <button className={`${(getSelectedCombos().length + getSelectedProducts().length )=== 0 ? "disabled" : ""}`} onClick={handleCreateOrder}> <FontAwesomeIcon icon={faCheckCircle} /> &nbsp;Crear orden</button>
+                        <h4>¿Estas seguro que deseas crear esta orden?</h4>
                     </div>
-                </Modal>
-            </>
-        );
-    };
+                    <div>
+                        {getSelectedProducts(productsCreate).length ? (
+                            <div>
+                                <h4>Productos ({getSelectedProducts(productsCreate).reduce((acc: number, product: any) => acc + (product.qty), 0)})</h4>
+                                <div className={`${getSelectedCombos(combosCreate).length ? "" : "max"}`}>
+                                    {getSelectedProducts(productsCreate).map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
+                                </div>
+                            </div>
+                        ) : null}
+                        {getSelectedCombos(combosCreate).length ? (
+                            <div >
+                                <h4>Combos ({getSelectedCombos(combosCreate).reduce((acc: number, combo: any) => acc + (combo.qty), 0)})</h4>
+                                <div className={`${getSelectedProducts(productsCreate).length ? "" : "max"}`}>
+                                    {getSelectedCombos(combosCreate).map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                    <div>
+                        
+                        <div>
+                            <h4>Metodo de pago</h4>
+                            <select id="productPaymentType" onChange={(e) => setPaymentMethod(parseInt(e.target.value))} value={paymentMethod}>
+                                <option value="1">Tarjeta</option>
+                                <option value="2">QR</option>
+                                <option value="3">Efectivo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <h4>Total</h4>
+                            <p>
+                                {getTotal(productsCreate, combosCreate).toFixed(2)}
+                            </p>
+                        </div>
+                    </div>
+                    <button className={`${(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length )=== 0 ? "disabled" : ""}`} onClick={handleCreateOrder}> <FontAwesomeIcon icon={faCheckCircle} /> &nbsp;Crear orden</button>
+                </div>
+            </Modal>
+            <ActionModal title="Alerta!" body={`¿Esta seguro que desea cancelar la orden #${orderToCancel}?`} showModal={showCancelOrderConfirmation} onConfirm={handleConfirmCancelOrder} onCancel={() => setShowCancelOrderConfirmation(false)}/>
+            <ActionModal title="Alerta!" body={`¿Esta seguro que desea editar la orden #${orderToEdit}?`} showModal={showEditOrderConfirmation} onConfirm={handleConfirmEditOrder} onCancel={() => setShowEditOrderConfirmation(false)}/>
+            <ActionModal title="Alerta!" body={`¿Esta seguro que desea finalizar la orden #${orderToFinalize}?`} showModal={showFinalizeOrderConfirmation} onConfirm={handleConfirmFinalizeOrder} onCancel={() => setShowFinalizeOrderConfirmation(false)}/>
+        </>
+    );
+};
 
+const OrderCard = ({id, total, handleFinalizeOrder, handleEditOrder} : {id: number, total: number, handleFinalizeOrder : Function, handleEditOrder : Function}) => {
+    return (
+        <div className="order-card">
+            <div>
+                <div>
+                    <h3>Orden</h3>
+                    <p>#{id}</p>
+                </div>
+                <div>
+                    <h3>Total</h3>
+                    <p>{total.toFixed(2)}</p>
+                </div>
+            </div>
+            <div>
+                <button onClick={() => handleEditOrder(id)}>
+                    <FontAwesomeIcon icon={faEdit} />
+                </button>
+                <button onClick={() => handleFinalizeOrder(id)}>
+                    <FontAwesomeIcon icon={faCheckCircle} />
+                </button>
+            </div>
+        </div>
+    )
+}
 
 const Detail = ({ qty, name, price }: { qty: number, name: string, price: number }) => {
     return (
