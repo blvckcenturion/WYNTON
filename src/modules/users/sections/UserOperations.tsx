@@ -14,6 +14,7 @@ import { open, save } from '@tauri-apps/api/dialog';
 import Logo from "../../../assets/logo";
 import { saveAs } from "file-saver";
 import domtoimage from 'dom-to-image';
+import { writeBinaryFile } from "@tauri-apps/api/fs";
 
 const UserOperations = () => {
 
@@ -133,7 +134,7 @@ const UserOperations = () => {
             try {
                 const dataUrl = await domtoimage.toPng(credentials);
                 const blob = await (await fetch(dataUrl)).blob();
-                saveAs(blob, 'credentials.png');
+                await saveAs(blob, `${newUser.id}.png`);
             } catch (err) {
                 console.error("Failed to generate an image from the element", err);
             }
