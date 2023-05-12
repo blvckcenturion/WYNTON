@@ -10,8 +10,10 @@ import createImage from "../../utils/functions/createImage";
 import elementSearch from "../../utils/functions/elementSearch";
 import authService from "../services/auth";
 import { useRouter } from "next/router";
-import { open } from '@tauri-apps/api/dialog';
-import capitalize from "../../utils/functions/capitalize";
+import { open, save } from '@tauri-apps/api/dialog';
+import Logo from "../../../assets/logo";
+import { saveAs } from "file-saver";
+import domtoimage from 'dom-to-image';
 
 const UserOperations = () => {
 
@@ -125,6 +127,21 @@ const UserOperations = () => {
         setNewUser(newUser)
     }
 
+    const saveCredentialsAsImage = async () => {
+        const credentials = document.getElementById("credentials");
+        if (credentials) {
+            try {
+                const dataUrl = await domtoimage.toPng(credentials);
+                const blob = await (await fetch(dataUrl)).blob();
+                saveAs(blob, 'credentials.png');
+            } catch (err) {
+                console.error("Failed to generate an image from the element", err);
+            }
+        } else {
+            console.error("Element with id 'credentials' not found");
+        }
+    }
+
     return (
         <>
             <div className="add-user-section section">
@@ -184,13 +201,27 @@ const UserOperations = () => {
                         <p>El usuario <span>{newUser?.names} {newUser?.last_names}</span> ha sido creado de forma exitosa.</p>
                     )}
                     <hr />
-                    <p className="select">Usuario: {newUser?.username}</p>
-                    <p className="select">Contraseña: {newUser?.password}</p>
+                    <div id="credentials">
+                        
+                        <div>
+                            {/* <Logo/> */}
+                            <h1>WYNTON</h1>
+                        </div>
+                        <h3>Credenciales de usuario</h3>
+                        <p className="select"><span>Usuario:</span> {newUser?.username}</p>
+                        <p className="select"><span>Contraseña:</span> {newUser?.password}</p>
+
+                    </div>
                     <hr />
-                    <button className="text-white font-bold px-4 rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => { setShowNewUserModal(false);  setNewUser(null)}}>
+                    <button type="button" onClick={() => { setShowNewUserModal(false);  setNewUser(null)}}>
                         <FontAwesomeIcon icon={faCircleCheck} />
                         &nbsp;Confirmar
                     </button>
+                    <button className="text-white font-bold py-2 rounded focus:outline-none focus:shadow-outline" type="button" onClick={saveCredentialsAsImage}>
+                        <FontAwesomeIcon icon={faSave} />
+                        &nbsp;Guardar imagen
+                    </button>
+
                 </div>
             </Modal>
             <ActionModal title="Eliminar usuario" body="¿Esta seguro que desea eliminar este usuario?" showModal={showUserDelete} onConfirm={handleDeleteUser} onCancel={() => setShowUserDelete(false)} />
@@ -212,8 +243,6 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
         if (user && user.photo) {
             setPhoto(user.photo)
             setPhotoSrc(user.photo)
-            // Usuario: peloculo168987
-            // Contraseña: fcCBhJpqJJ72
         }
     }, [])
 

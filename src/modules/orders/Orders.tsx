@@ -4,7 +4,7 @@ import categoryService from "../menu/services/category";
 import capitalize from "../utils/functions/capitalize";
 import comboService from "../combos/services/combo";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faCircleCheck, faEdit, faFileImage, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCancel, faCheck, faCheckCircle, faCircleCheck, faEdit, faFileImage, faTrash } from "@fortawesome/free-solid-svg-icons";
 import ProductCard from "./components/ProductCard";
 import elementSearch from "../utils/functions/elementSearch";
 import Modal from "../utils/components/Modal";
@@ -30,6 +30,7 @@ const Orders = ({user} : {user: any}) => {
     const [productsSearchEdit, setProductsSearchEdit] = useState<any[]>([])
     const [combosSearchEdit, setCombosSearchEdit] = useState<any[]>([])
     const [confirmOrderModal, setConfirmOrderModal] = useState<boolean>(false)
+    const [confirmOrderModalEdit, setConfirmOrderModalEdit] = useState<boolean>(false)
     const [pendingOrders, setPendingOrders] = useState<any[]>([])
     const [paymentMethod, setPaymentMethod] = useState<number>(1)
     const [showCancelOrderConfirmation, setShowCancelOrderConfirmation] = useState<boolean>(false)
@@ -172,7 +173,7 @@ const Orders = ({user} : {user: any}) => {
     const handleChangeProductQty = (id: number, qty: number, prodList: any[]) => {
         let productsCopy = [...prodList]
         let product = prodList.find((p: any) => p.id === id)
-        console.log('id :',id)
+
         if (qty >= 0) product.qty = qty
         if (!editOrderMode) {
             setProductsCreate(productsCopy)
@@ -252,7 +253,6 @@ const Orders = ({user} : {user: any}) => {
         }
 
         let res: any = await orderService.create(order)
-        console.log('id',res)
         
         if (res) {
             toast.success(`Orden #${res} creada de forma exitosa`)
@@ -271,6 +271,36 @@ const Orders = ({user} : {user: any}) => {
             toast.error("Error al crear la orden.")
         }
         
+    }
+
+    const handleOrderEdition = async () => { 
+        let items: any[] = []
+        getSelectedProducts(productsEdit).forEach((p: any) => {
+            items.push({ order_id: editOrder.id, productId: p.id, quantity: p.qty, price: p.price })
+        })
+
+        getSelectedCombos(combosEdit).forEach((c: any) => {
+            items.push({ order_id: editOrder.id, comboId: c.id, quantity: c.qty, price: c.price })
+        })
+
+        console.log(paymentMethod !== editOrder.payment_method ? paymentMethod : null)
+
+        let order = {
+            items: items,
+            userId: user.id,
+            id: editOrder.id,
+            paymentMethod: paymentMethod !== editOrder.payment_method ? paymentMethod : null
+        }
+        
+        let res: any = await orderService.updateOrderDetails(order)
+        if (res) {
+            toast.success(`Orden #${editOrder.id} editada de forma exitosa`)
+            
+            cancelEditOrder()
+            setConfirmOrderModalEdit(false)
+            
+        }
+
     }
 
     const handleCancelOrder = async (id: number) => { 
@@ -304,16 +334,21 @@ const Orders = ({user} : {user: any}) => {
     }
 
     const cancelEditOrder = () => {
-        (async () => {
-            setProductType(0)
-            setCombosEdit([])
-            setProductsEdit([])
-            await setEditOrderMode(false)
-            setEditOrder(null)
-            setProductSearchTerm("")
 
-        })()
-        console.log(editOrderMode)
+        setProductsEdit(productsEdit.map((p: any) => {
+            p.qty = 0
+            return p
+        }))
+        setCombosEdit(combosEdit.map((c: any) => {
+            c.qty = 0
+            return c
+        }))
+        setProductType(0)
+        setEditOrderMode(false)
+        setEditOrder(null)
+        setProductSearchTerm("")
+        setPaymentMethod(1)
+        loadPendingOrders()
     }
 
     const handleConfirmEditOrder = async () => { 
@@ -345,11 +380,13 @@ const Orders = ({user} : {user: any}) => {
         setEditOrderMode(true)
         setEditOrder(editOrder)
         setProductSearchTerm("")
-            
-        }
+        setPaymentMethod(editOrder.payment_method)
+        // Usuario: asd23asd2168846
+        // Contraseña: UP2Npjw4hPQn
+    }
                     
-                    return (
-                        <>
+    return (
+        <>
             <div className="orders-module">
                 <div className={`products-section`}>
                     <div>
@@ -384,7 +421,6 @@ const Orders = ({user} : {user: any}) => {
                                 </div>
                             ) : null}
                         </form>
-                    
                     </div>
                     <div>
                             {
@@ -436,37 +472,36 @@ const Orders = ({user} : {user: any}) => {
                             </p>
                         </div>
                         <div>
-                            <button disabled={(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length) === 0 && !editOrderMode || (getSelectedCombos(combosEdit).length + getSelectedProducts(productsEdit).length) === 0 && editOrderMode} onClick={() => { if (editOrderMode) { setEditOrderMode(false); setEditOrder(null) } else setConfirmOrderModal(true) }}>{editOrderMode ? "Editar detalles de" : "Crear"} orden</button>
+                            <button disabled={(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length) === 0 && !editOrderMode || (getSelectedCombos(combosEdit).length + getSelectedProducts(productsEdit).length) === 0 && editOrderMode} onClick={() => editOrderMode ? setConfirmOrderModalEdit(true) : setConfirmOrderModal(true) }>{editOrderMode ? "Editar detalles de" : "Crear"} orden</button>
                             {editOrderMode ? (
                                 <>
                                     <button onClick={() => handleCancelOrder(editOrder.id)}>Eliminar orden</button>
                                     <button onClick={() => cancelEditOrder()}>Cancelar edicion</button>
-                                </>            
-                                                
+                                </>         
                             ): null}
                         </div>
                     </div>
                 </div>
             </div>
-            <Modal className="confirm-order-modal" title={"Confirmacion de orden"} showModal={confirmOrderModal} onClose={() => setConfirmOrderModal(false)}>
+            <Modal className="confirm-order-modal" title={"Confirmacion de orden"} showModal={confirmOrderModal && !editOrderMode || confirmOrderModalEdit && editOrderMode} onClose={() => editOrderMode ? setConfirmOrderModalEdit(false) :setConfirmOrderModal(false)}>
                 <div>
                     <div>
-                        <h4>¿Estas seguro que deseas crear esta orden?</h4>
+                        <h4>¿Estas seguro que deseas {`${editOrderMode ? "editar" : "crear"}`} esta orden?</h4>
                     </div>
                     <div>
-                        {getSelectedProducts(productsCreate).length ? (
+                        {getSelectedProducts(editOrderMode ? productsEdit : productsCreate).length ? (
                             <div>
-                                <h4>Productos ({getSelectedProducts(productsCreate).reduce((acc: number, product: any) => acc + (product.qty), 0)})</h4>
-                                <div className={`${getSelectedCombos(combosCreate).length ? "" : "max"}`}>
-                                    {getSelectedProducts(productsCreate).map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
+                                <h4>Productos ({getSelectedProducts(editOrderMode ? productsEdit : productsCreate).reduce((acc: number, product: any) => acc + (product.qty), 0)})</h4>
+                                <div className={`${getSelectedCombos(editOrderMode ? combosEdit : combosCreate).length ? "" : "max"}`}>
+                                    {getSelectedProducts(editOrderMode ? productsEdit : productsCreate).map((product: any) => <Detail key={product.id} name={product.name} qty={product.qty} price={product.price} />)}
                                 </div>
                             </div>
                         ) : null}
-                        {getSelectedCombos(combosCreate).length ? (
+                        {getSelectedCombos(editOrderMode ? combosEdit : combosCreate).length ? (
                             <div >
-                                <h4>Combos ({getSelectedCombos(combosCreate).reduce((acc: number, combo: any) => acc + (combo.qty), 0)})</h4>
-                                <div className={`${getSelectedProducts(productsCreate).length ? "" : "max"}`}>
-                                    {getSelectedCombos(combosCreate).map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
+                                <h4>Combos ({getSelectedCombos(editOrderMode ? combosEdit : combosCreate).reduce((acc: number, combo: any) => acc + (combo.qty), 0)})</h4>
+                                <div className={`${getSelectedProducts(editOrderMode ? productsEdit : productsCreate).length ? "" : "max"}`}>
+                                    {getSelectedCombos(editOrderMode ? combosEdit : combosCreate).map((combo: any) => <Detail key={combo.id} name={combo.denomination} qty={combo.qty} price={combo.price} />)}
                                 </div>
                             </div>
                         ) : null}
@@ -484,11 +519,14 @@ const Orders = ({user} : {user: any}) => {
                         <div>
                             <h4>Total</h4>
                             <p>
-                                {getTotal(productsCreate, combosCreate).toFixed(2)}
+                                {getTotal(editOrderMode ? productsEdit : productsCreate, editOrderMode ? combosEdit : combosCreate).toFixed(2)}
                             </p>
                         </div>
                     </div>
-                    <button className={`${(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length )=== 0 ? "disabled" : ""}`} onClick={handleCreateOrder}> <FontAwesomeIcon icon={faCheckCircle} /> &nbsp;Crear orden</button>
+                    <div>
+                        <button onClick={editOrderMode ? handleOrderEdition : handleCreateOrder}><FontAwesomeIcon icon={faCheck} /> &nbsp;Confirmar</button>
+                        <button onClick={() => editOrderMode ? setConfirmOrderModalEdit(false) : setConfirmOrderModal(false)}><FontAwesomeIcon icon={faCancel} /> &nbsp;Cancelar</button>
+                    </div>
                 </div>
             </Modal>
             <ActionModal title="Alerta!" body={`¿Esta seguro que desea cancelar la orden #${orderToCancel}?`} showModal={showCancelOrderConfirmation} onConfirm={handleConfirmCancelOrder} onCancel={() => setShowCancelOrderConfirmation(false)}/>

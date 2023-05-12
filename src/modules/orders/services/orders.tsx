@@ -75,6 +75,26 @@ class orderService {
             displayError(e)
         }
     }
+
+    public static async updateOrderDetails(order: any) { 
+        try {
+            await invoke("delete_order_details", { id: order.id })
+            order.items.forEach(async (i: any) => {
+                let prod = { orderId: order.id, productId: i.productId, comboId: i.comboId, quantity: i.quantity, price: i.price }
+                await invoke("create_order_item", prod)
+            })
+
+            if (order.paymentMethod != null) {
+                await invoke("update_order_payment_method", {id: order.id, paymentMethod: order.paymentMethod})
+            }
+
+            
+            return true
+        } catch (e: any) {
+            console.log(e)
+            displayError(e)
+        }
+    }
 }
 
 export default orderService

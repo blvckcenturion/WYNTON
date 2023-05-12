@@ -79,6 +79,9 @@ fn main() {
             commands::order::get_all_order,
             commands::order::get_all_by_order_id,
             commands::order::update_order_status,
+            commands::order::update_order_payment_method,
+            commands::order::delete_order_details,
+            db::save_my_image
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

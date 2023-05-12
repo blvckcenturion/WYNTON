@@ -66,3 +66,24 @@ pub fn update_order_status(
 
     services::order::update_order_status(conn, status, id)
 }
+
+#[tauri::command]
+pub fn delete_order_details(
+    id: i32,
+    state: tauri::State<AppState>,
+) {
+    let conn = &mut state.conn.lock().unwrap();
+
+    services::order::delete_order_details(conn, id)
+}
+
+#[tauri::command]
+pub fn update_order_payment_method(
+    payment_method: i32,
+    id: i32,
+    state: tauri::State<AppState>,
+) {
+    let conn = &mut state.conn.lock().unwrap();
+
+    services::order::update_order_payment_method(conn, payment_method, id)
+}

@@ -66,6 +66,8 @@ const OrderAnalytics = () => {
         let ordersPerDayAvg = 0
         let mostSoldProducts: any[] = []
         let bestUserSellers: any[] = []
+        let mostUsedPaymentMethods: any[] = []
+
         orders.forEach((order) => { 
             total += order.total
             units += order.items.reduce((acc: number, item: any) => { 
@@ -98,6 +100,17 @@ const OrderAnalytics = () => {
                 }
             })
 
+            let paymentMethod = mostUsedPaymentMethods.find((paymentMethod) => paymentMethod.paymentMethod === order.paymentMethod)
+                if (paymentMethod) {
+                    paymentMethod.quantity += 1
+                }
+                else {
+                    mostUsedPaymentMethods.push({
+                        paymentMethod: order.paymentMethod,
+                        quantity: 1
+                    })
+                }
+
             let seller = bestUserSellers.find((seller) => seller.userId === order.userId)
             if (seller) {
                 seller.total += order.items.reduce((acc: number, item: any) => { 
@@ -121,11 +134,15 @@ const OrderAnalytics = () => {
         ordersPerDayAvg = ordersPerDay.reduce((acc: number, orderPerDay: any) => {
             return acc + orderPerDay.orders.length
         }, 0) / ordersPerDay.length
-        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers }
+
+        mostUsedPaymentMethods = mostUsedPaymentMethods.sort((a, b) => {
+            return b.quantity - a.quantity
+        })
+        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers, mostUsedPaymentMethods }
     } 
 
     const handleUserChange = async (e: any) => { 
-        if (e.target.value !== "" && performance === "2") { 
+        if (e.target.value !== "" && (performance === "2" || performance === "3")) { 
             setPerformance("")
         }
         setUser(e.target.value)
@@ -138,8 +155,6 @@ const OrderAnalytics = () => {
     }
 
     const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null) => {
-        //Usuario: santiagosarabia168250
-        //Contraseña: FYvidi7ZxKvk
         let orders = allOrders
 
         if (userFilter !== "" && userFilter !== null) { 
@@ -241,7 +256,10 @@ const OrderAnalytics = () => {
                             <option value="">No mostrar</option>
                             <option value="1">Productos</option>
                             {user == "" ? (
-                                <option value="2">Usuarios</option>
+                                <>
+                                    <option value="2">Usuarios</option>
+                                    <option value="3">Metodos de pago</option>
+                                </>
                             ) : null}
                         </select>
                     </div>
@@ -282,7 +300,7 @@ const OrderAnalytics = () => {
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Unidades</th>
+                                    {performance == "3" ? <th>Cantidad</th> : <th>Unidades</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -294,7 +312,6 @@ const OrderAnalytics = () => {
                                         </tr>
                                     )
                                 })}
-                                
                                 {performance == "2" && stats.bestUserSellers && stats.bestUserSellers.map((user: any) => { 
                                     return (
                                         <tr>
@@ -303,47 +320,64 @@ const OrderAnalytics = () => {
                                         </tr>
                                     )
                                 })}
+                                {performance == "3" && stats.mostUsedPaymentMethods && stats.mostUsedPaymentMethods.map((paymentMethod: any) => {
+                                    return (
+                                        <tr>
+                                            <td>{paymentMethod.paymentMethod == 1 ? "Tarjeta" : paymentMethod.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                            <td>{paymentMethod.quantity}</td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
                 ) : null}
                 <div className={`table item-table orders ${performance ? "" : "no-performance"}`}>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha/Hora</th>
-                                <th>Usuario</th>
-                                <th>Productos</th>
-                                <th>Total</th>
-                                <th>Metodo de pago</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.map((order) => { 
-                                return (
-                                    <tr>
-                                        <td>{order.dateTime.toLocaleString()}</td>
-                                        <td>{order.userName}</td>
-                                        <td>
-                                        {
-                                            order.items.map((item: any) => {
-                                                return (
-                                                    <div>
-                                                        <span>{item.name}: </span>
-                                                        <span>{item.price.toFixed(2)} BS x</span>
-                                                        <span className="text-accent-1">{item.quantity} = {item.subtotal} BS</span>
-                                                    </div>
-                                                )
-                                             })
-                                        }
-                                        </td>
-                                        <td>{order.total.toFixed(2)} BS</td>
-                                        <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                    {orders == null || orders.length == 0 ? (
+                        <div>
+                            <p>No existen ordenes registradas.</p>
+                        </div>
+                    ): (
+                         <table>
+                         <thead>
+                             <tr>
+                                 <th>#</th>
+                                 <th>Fecha/Hora</th>
+                                 <th>Usuario</th>
+                                 <th>Productos</th>
+                                 <th>Total</th>
+                                 <th>Metodo de pago</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             {orders.map((order) => { 
+                                 return (
+                                     <tr>
+                                         <td>{order.id}</td>
+                                         <td>{order.dateTime.toLocaleString()}</td>
+                                         <td>{order.userName}</td>
+                                         <td>
+                                         {
+                                             order.items.map((item: any) => {
+                                                 return (
+                                                     <div>
+                                                         <span>{item.name}: </span>
+                                                         <span>{item.price.toFixed(2)} BS x</span>
+                                                         <span className="text-accent-1">{item.quantity} = {item.subtotal} BS</span>
+                                                     </div>
+                                                 )
+                                              })
+                                         }
+                                         </td>
+                                         <td>{order.total.toFixed(2)} BS</td>
+                                         <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                     </tr>
+                                 )
+                             })}
+                         </tbody>
+                     </table>
+                    )}
+                   
                 </div>
             </div>
         </div>

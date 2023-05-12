@@ -57,3 +57,25 @@ pub fn update_order_status(conn: &mut SqliteConnection, order_status: i32, id: i
         .unwrap();
     let _order: Order = orders.find(id).first::<Order>(conn).unwrap_or_else(|_| panic!("Unable to find post {}", id));
 }
+
+pub fn delete_order_details(conn: &mut SqliteConnection, id: i32) {
+    use crate::schema::order_item::dsl::{order_item, order_id};
+
+    let _ = diesel::delete(order_item.filter(order_id.eq(id)))
+        .execute(conn)
+        .unwrap();
+}
+
+pub fn update_order_payment_method(conn: &mut SqliteConnection, payment_method: i32, id: i32) {
+    use crate::schema::orders::dsl::{orders, payment_method as order_payment_method, updatedAt};
+
+    // unwrap order status and update order status
+    let _ = diesel::update(orders.find(id))
+        .set((
+            order_payment_method.eq(payment_method),
+            updatedAt.eq(Utc::now().naive_utc())
+        ))
+        .execute(conn)
+        .unwrap();
+    let _order: Order = orders.find(id).first::<Order>(conn).unwrap_or_else(|_| panic!("Unable to find post {}", id));
+}

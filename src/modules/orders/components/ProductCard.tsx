@@ -21,7 +21,7 @@ const ProductCard = ({id, className, photo, name, children, qty, handleChangeQty
             </div>
             <div>
                 <button className="btn btn-primary" onClick={() => handleChangeQty(id, qty-1, items)}>-</button>
-                <input type="number" readOnly value={qty}/>
+                <input type="number" value={qty} onChange={(e) => handleChangeQty(id, parseInt(e.target.value ? e.target.value : "0"), items)}/>
                 <button className="btn btn-primary" onClick={() => handleChangeQty(id, qty+1, items)}>+</button>
             </div>
         </div>

@@ -3,6 +3,7 @@ extern crate dotenv;
 use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
+use std::path::Path;
 
 pub fn establish_connection() -> SqliteConnection {
     dotenv().ok();
