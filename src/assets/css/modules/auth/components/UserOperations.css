@@ -99,6 +99,7 @@
             &.modal-body{
                 height:80%;
                 #credentials{
+                    background-color: var(--bg-color);
                     display: flex;
                     flex-direction: column;
                     justify-content: space-evenly;
@@ -117,7 +118,10 @@
                             height: 7vh;
                         }
                         h1{
-                            
+                            @media (prefers-color-scheme: dark){
+                                color: var(--bg-color-light);
+                            }
+                            color: var(--bg-color-dark);
                             font-family: var(--main-font);
                             font-size: 4vh;
                         }

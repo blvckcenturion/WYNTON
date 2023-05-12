@@ -134,7 +134,7 @@ const UserOperations = () => {
             try {
                 const dataUrl = await domtoimage.toPng(credentials);
                 const blob = await (await fetch(dataUrl)).blob();
-                await saveAs(blob, `${newUser.id}.png`);
+                await saveAs(blob, `${newUser.username}.png`);
             } catch (err) {
                 console.error("Failed to generate an image from the element", err);
             }
@@ -205,7 +205,7 @@ const UserOperations = () => {
                     <div id="credentials">
                         
                         <div>
-                            {/* <Logo/> */}
+                            <Logo/>
                             <h1>WYNTON</h1>
                         </div>
                         <h3>Credenciales de usuario</h3>
