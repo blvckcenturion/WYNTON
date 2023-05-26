@@ -192,7 +192,7 @@ const UserOperations = () => {
                 </div>
             </div>
             <Modal className={"add-user-modal"} title={userEdit ? "Editar usuario" : "Agregar usuario"} showModal={showUserForm} onClose={() => {setShowUserForm(false); setUserEdit(null);} }>
-                <UserForm currentUser={currentUser}  showNewUser={showNewUser} user={userEdit} loadUsers={loadUsers} setShowUserForm={setShowUserForm} setUser={setUserEdit}/>
+                <UserForm userList={userList} currentUser={currentUser}  showNewUser={showNewUser} user={userEdit} loadUsers={loadUsers} setShowUserForm={setShowUserForm} setUser={setUserEdit}/>
             </Modal>
             <Modal className="show-user-modal" title={"Usuario creado de forma exitosa"} showModal={showNewUserModal} onClose={() => { setShowNewUserModal(false);  setNewUser(null)}}>
                 <div className="modal-body">
@@ -230,7 +230,7 @@ const UserOperations = () => {
     )  
 }
 
-const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, currentUser}: {showNewUser : Function, user : any | null, loadUsers : Function, setShowUserForm : Function, setUser : Function, currentUser : any}) => {
+const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, currentUser, userList}: {showNewUser : Function, user : any | null, loadUsers : Function, setShowUserForm : Function, setUser : Function, currentUser : any, userList: any[]}) => {
     
     const [photo, setPhoto] = useState<any>("");
     const [photoSrc, setPhotoSrc] = useState<any>("");
@@ -241,6 +241,7 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
     
 
     useEffect(() => {
+        console.log(user)
         if (user && user.photo) {
             setPhoto(user.photo)
             setPhotoSrc(user.photo)
@@ -253,6 +254,7 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
             last_names: "",
             user_type: (currentUser && currentUser.user_type === 3) ? "1" : "2",
             user_reference: "",
+            username: ""
         },
         onSubmit: async (values) => { 
             try {
@@ -260,6 +262,13 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
                 u.names = u.names.toLowerCase();
                 u.last_names = u.last_names.toLowerCase();
 
+                if (u.username.split(" ").length > 1) { 
+                    throw new Error("El nombre de usuario no puede contener espacios en blanco.");
+                }
+
+                if (userList.filter((u) => u.username === values.username).length > 0) { 
+                    throw new Error("El nombre de usuario ya se encuentra en uso.");
+                }
                 
                 if (photo !== "" && photoSrc !== "") {
                     u.photo = await createImage("users", photoSrc);
@@ -293,6 +302,7 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
             last_names: user?.last_names || "",
             user_type: user?.user_type || 1,
             user_reference: user?.user_reference || "",
+            username: user?.username || ""
         },
         onSubmit: async (values) => { 
             let u = authService.userValidationSchema.parse({ ...values, user_type: parseInt(values.user_type) });
@@ -395,6 +405,12 @@ const UserForm = ({showNewUser, user, loadUsers, setShowUserForm, setUser, curre
                             <option value="2">Empleado</option>
                         </select>    
                     </div>
+                    <div className="mb-1">
+                    <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="user_reference">
+                        Nombre de usuario <span>(*)</span><br></br>{!user && createUser.values.names && createUser.values.last_names && `Sugerido: ${createUser.values.names.toLowerCase().split(" ")[0]}_${createUser.values.last_names.toLowerCase().split(" ")[0]}`}
+                    </label>
+                    <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="user_reference" type="text" onChange={user ? editUser.handleChange("username") : createUser.handleChange("username")} value={user ? editUser.values.username : createUser.values.username } disabled={user ? true : false}/>
+                    </div>   
                     <div className="mb-1">
                         <label className="block text-accent-1 text-sm font-bold mb-2" htmlFor="user_reference">
                             {`Referencias del usuario ${user ? editUser.values.user_reference.length > 0 ? `(${editUser.values.user_reference.length})` : ""  : createUser.values.user_reference.length > 0 ? `(${createUser.values.user_reference.length})` : ""}`}

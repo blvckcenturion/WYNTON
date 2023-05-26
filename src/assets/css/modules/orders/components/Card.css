@@ -72,12 +72,14 @@
                 margin: 0;
             }
             button{
-                color: var(--accent-color-2);
                 @apply shadow;
+                color: var(--bg-accent);
                 padding: 10px;
                 font-size: 2rem;
+                transition: all 0.3s ease-in-out;
+                background-color: var(--accent-color-1);
                 &:hover{
-                    border-color: var(--accent-color-2);
+                    background-color: var(--main-color);
                 }
             }
             /* Firefox */

@@ -86,6 +86,7 @@
                         color: var(--accent-color-1);
                     }
                     > div{
+                        
                         overflow: hidden;
                         width: 100%;
                         height: 100%;
@@ -101,6 +102,7 @@
                         > div{
                             width: 95%;
                             height: 100%;
+                            
                             > div{
                                 width: 100%;
     
@@ -108,6 +110,7 @@
                                     margin-bottom:10px;
                                 }
                                 &:last-child{
+                                    
                                     
                                     height: 85%;
                                     overflow-y: scroll;
@@ -175,6 +178,7 @@
                                                 }
                                             } 
                                             &:nth-child(2){
+                                                
                                                 border-left: 1px solid var(--accent-color-1);
                                                 border-right: 1px solid var(--accent-color-1);
                                                 height: 100%;
@@ -184,6 +188,7 @@
                                                 justify-content: space-evenly;
                                                 align-items: center;
                                                 > p{
+                                                    
                                                     width: 100%;
                                                     padding: 5px;
                                                     font-size: 0.8rem;
@@ -208,6 +213,7 @@
                                                 align-items: center;
                                                 flex-direction: column;
                                                 > div{
+                                                    
                                                     width:100%;
                                                     height:45%;
                                                     display: flex;
@@ -223,10 +229,13 @@
                                                             padding: 10px;
                                                         }
                                                         > div{
-                                                            width: 20%;
-                                                            padding: 10px 20px;
-                                                            border: 1px solid var(--accent-color-1);
-                                                            p{
+                                                            width: 35%;
+                                                            
+                                                            
+                                                            > input{
+                                                                border: 1px solid var(--accent-color-1);
+                                                                width: 100%;
+                                                                height: 100%;
                                                                 text-align: center;
                                                             }
                                                         }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Logo from "../../assets/logo";
 import NavigationOption from "./NavigationOption";
 import { faUserCircle } from "@fortawesome/free-regular-svg-icons";
-import { faBellConcierge, faCancel, faCartShopping, faCheck, faGears, faKey, faObjectGroup, faReceipt, faRightFromBracket, faSave, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faBellConcierge, faCancel, faCartShopping, faCheck, faChevronCircleDown, faGear, faGears, faHistory, faKey, faObjectGroup, faReceipt, faRightFromBracket, faSave, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Menu from "../menu/Menu";
 import Combos from "../combos/Combos";
@@ -18,6 +18,7 @@ import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import OrderAnalytics from "../orders/OrdersHistory";
 import ActionModal from "../utils/components/ActionModal";
+import DailyOrders from "../orders/DailyOrders";
 
 const Dashboard = () => { 
 
@@ -29,9 +30,19 @@ const Dashboard = () => {
     const [showPasswordUpdate, setShowPasswordUpdate] = useState(false)
     const [showConfirmLogout, setShowConfirmLogout] = useState(false)
 
+
     useEffect(() => {
+        (async () => {
+            console.log('aaa')
+            
+        })()
+    }, [])
+
+    useEffect(() => {
+
         (async () => { 
             const user = await authService.loadUser()
+            console.log(user.id)
 
             if (user) { 
                 user.photo = user.photo && await exists(user.photo) ? convertFileSrc(user.photo) : null
@@ -64,8 +75,6 @@ const Dashboard = () => {
         },
         onSubmit: async (values) => {
             try {
-                
-                let val = values
                 let u = await authService.loadUser()
                 values.username = u.username
                 let l = authService.changePasswordSchema.parse(values);
@@ -106,7 +115,8 @@ const Dashboard = () => {
             if(user.user_type && user.user_type == 2) {
                 return (
                     <>
-                        <NavigationOption title={"Ordenes"} icon={faCartShopping} onClick={() =>handleToggle(1)} active={tab === 1}/>
+                        <NavigationOption title={"Ordenes"} icon={faCartShopping} onClick={() => handleToggle(1)} active={tab === 1} />
+                        <NavigationOption title={"Historial de ordenes"} icon={faReceipt} onClick={() => handleToggle(2)} active={tab === 2} />
                     </>
                 )
             } else {
@@ -123,8 +133,7 @@ const Dashboard = () => {
         }
         return <></>
     }
-    //Usuario: sapoman123168279
-    //Contraseña: n9YUuuJQmmBh
+
     const Heading = () => {
         return (
             <div>
@@ -136,19 +145,17 @@ const Dashboard = () => {
     
     const UserDetails = () => {
         return (
-            <div className="user-details" onClick={() => setShowUserOptions(true)}>
-                {user && user.photo ? (
-                    <img src={user.photo} alt="" />
-                ) : (
-                    <FontAwesomeIcon icon={faUserCircle} />
-                )}
-                <div>
+            <div className="user-details" >
+                <div className="user-credentials">
                     {user && (
                         <>
                         <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
-                        <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
+                        <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Admin"}</h4>
                         </>
                     )}
+                </div>
+                <div className="user-options" onClick={() => setShowUserOptions(true)}>
+                    <FontAwesomeIcon icon={faGear} />
                 </div>
             </div>
         )
@@ -170,25 +177,10 @@ const Dashboard = () => {
                 ) : (
                     <div className="dashboard-header" >
                             <Heading />
-                            <div onClick={() => setShowUserOptions(true)}>
-                                <FontAwesomeIcon icon={faGears} /> &nbsp;
-                                Haz click aca para ver ajustes
-                            </div>
-                        <div className="user-details" >
-                            {user && user.photo ? (
-                                <img src={user.photo} alt="" />
-                            ) : (
-                                <FontAwesomeIcon icon={faUserCircle} />
-                            )}
                             <div>
-                                {user && (
-                                        <>
-                                        <h3>{capitalize(user.names)} {capitalize(user.last_names)}</h3>
-                                        <h4>{user.user_type == 1 ? "Administrador" : user.user_type == 2 ? "Empleado" : "Super Administrador"}</h4>
-                                        </>
-                                )}
+                                {<UserOptions/>}
                             </div>
-                        </div>
+                            <UserDetails/>
                     </div>
                 )}
                 
@@ -203,7 +195,8 @@ const Dashboard = () => {
                         </>
                     ) : (
                         <>
-                            {tab == 1 && <Orders user={user} />}
+                                {user && tab == 1 && <Orders user={user} />}
+                                {user && tab == 2 && <DailyOrders user={user} />}
                         </>
                     )}
                 </div>

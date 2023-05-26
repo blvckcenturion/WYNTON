@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import authService from "../users/services/auth";
-import { toast } from "react-toastify";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFighterJet } from "@fortawesome/free-solid-svg-icons";
 import orderService from "./services/orders";
 import convertUTCDateToLocalDate from "../utils/functions/convertUTCDateToLocalDate";
 import capitalize from "../utils/functions/capitalize";
@@ -17,12 +14,21 @@ const OrderAnalytics = () => {
     const [user, setUser] = useState<any>("")
     const [stats, setStats] = useState<any>({})
     const [performance, setPerformance] = useState<any>("")
+    const [status, setStatus] = useState<any>("")
 
     useEffect(() => {
         (async () => {
             let users: any[] = await authService.load()
-            let orders: any[] = await orderService.load(2)
-            console.log(orders)
+
+            let canceledOrders: any[] = await orderService.load(0)
+            let pendingOrders: any[] = await orderService.load(1)
+            let finalizedOrders: any[] = await orderService.load(2)
+
+            let orders: any[] = finalizedOrders
+            orders = orders.concat(canceledOrders)
+            orders = orders.concat(pendingOrders)
+
+            
             orders = orders.map((order) => {
                 let user = users.find((user) => user.id === order.user_id)
                 return {
@@ -41,14 +47,17 @@ const OrderAnalytics = () => {
                             comboId: item.combo_id,
                             productId: item.product_id,
                             id: item.id,
-                            name: capitalize(item.product ? item.product.name : item.combo.denomination)
+                            name: capitalize(item.product ? item.product.name : item.combo.denomination),
                         }
                     }),
+                    status: order.status,
                     userName: user ? `${user.names} ${user.last_names}` : "Super Admin",
                     dateTime: convertUTCDateToLocalDate(new Date(order.created_at))
                 }
             })
-            let stats = await calculateOrderStats(orders)
+
+            finalizedOrders = orders.filter((order) => order.status == 2)
+            let stats = await calculateOrderStats(finalizedOrders)
             setUsers(users)
             setOrders(orders)
             setAllOrders(orders)
@@ -147,14 +156,14 @@ const OrderAnalytics = () => {
         }
         setUser(e.target.value)
         
-        let { orders, stats } = await loadOrders(e.target.value, startDate, endDate)
+        let { orders, stats } = await loadOrders(e.target.value, startDate, endDate, status)
         
         setStats(stats)
         setOrders(orders)
 
     }
 
-    const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null) => {
+    const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null, status: any | null) => {
         let orders = allOrders
 
         if (userFilter !== "" && userFilter !== null) { 
@@ -184,8 +193,19 @@ const OrderAnalytics = () => {
                 return d1 <= d
             })
         }
+
+        let stats;
+        console.log(status)
+        if (status !== "" && status !== null) {
+            orders = orders.filter((order) => {
+                return order.status == parseInt(status)
+            })
+            stats = await calculateOrderStats(orders)
+        } else {
+            let finalizedOrders = orders.filter((order) => order.status == 2)
+            stats = await calculateOrderStats(finalizedOrders)
+        }
         
-        let stats = await calculateOrderStats(orders)
         
         return { orders, stats}
     }
@@ -198,7 +218,7 @@ const OrderAnalytics = () => {
         }
         setStartDate(e.target.value)
         
-        let { orders, stats } = await loadOrders(user, e.target.value, endDate)
+        let { orders, stats } = await loadOrders(user, e.target.value, endDate, status)
         
         setStats(stats)
         setOrders(orders)
@@ -212,29 +232,38 @@ const OrderAnalytics = () => {
         }
         setEndDate(e.target.value)
 
-        let { orders, stats } = await loadOrders(user, startDate, e.target.value)
+        let { orders, stats } = await loadOrders(user, startDate, e.target.value, status)
         
         setStats(stats)
         setOrders(orders)
     }
 
-    const cleanFilters = async () => {
-        await setStartDate("")
-        await setEndDate("")
-        await setUser("")
+    const handleStatusChange = async (e: any) => { 
+        setStatus(e.target.value)
 
-        let { orders, stats } = await loadOrders(null, null, null)
+        let { orders, stats } = await loadOrders(user, startDate, endDate, e.target.value)
 
         setStats(stats)
         setOrders(orders)
 
-        
+    }   
+
+    const cleanFilters = async () => {
+        setStartDate("")
+        setEndDate("")
+        setUser("")
+        setStatus("")
+
+        let { orders, stats } = await loadOrders(null, null, null, null)
+
+        setStats(stats)
+        setOrders(orders)
     }
 
     return (
         <div className="order-analytics-module">
             <div>
-                <form className={`${(startDate != "" || endDate != "") ? "" : "no-filters"}`}>
+                <form className={`${(startDate != "" || endDate != "" || status != "") ? "" : "no-filters"}`}>
                     <div>
                         <label htmlFor="orderUser">
                             Usuario
@@ -263,6 +292,18 @@ const OrderAnalytics = () => {
                             ) : null}
                         </select>
                     </div>
+                    {/* Filter by status */}
+                    <div>
+                        <label htmlFor="orderStatus">
+                            Estado
+                        </label>
+                        <select name="orderStatus" id="orderStatus" value={status} onChange={handleStatusChange}>
+                            <option value="">Todos</option>
+                            <option value="0">Cancelada</option>
+                            <option value="1">Pendiente</option>
+                            <option value="2">Finalizada</option>
+                        </select>
+                    </div>
                     <div>
                         <label htmlFor="orderStartDate">
                             Fecha de inicio
@@ -276,7 +317,7 @@ const OrderAnalytics = () => {
                         <input type="date" name="orderEndDate" id="orderEndDate" value={endDate} onChange={handleEndDateChange}/>
                     </div>
                     
-                    {(startDate != "" || endDate != "") ? (
+                    {(startDate != "" || endDate != "" || status != "") ? (
                         <div>
                             <button type="button" onClick={cleanFilters}>
                                 Limpiar 
@@ -287,10 +328,10 @@ const OrderAnalytics = () => {
                 </form>
             </div>
             <div>
-                <OrderAnalyticsCard title="Total generado" value={`${stats.total ? stats.total.toFixed(2): 0} BS`} />
+                <OrderAnalyticsCard title={(status == "" || status == "2") ? "Total generado" : status == "1" ? "Total por capturar" : "Total no capturado"} value={`${stats.total ? stats.total.toFixed(2): 0} BS`} />
                 <OrderAnalyticsCard title="Numero de ordenes" value={`${stats.totalOrders ? stats.totalOrders : 0}`} />
-                <OrderAnalyticsCard title="Promedio diario de ventas" value={`${stats.ordersPerDayAvg ? stats.ordersPerDayAvg.toFixed(2) : 0}`} />
-                <OrderAnalyticsCard title={"Unidades vendidas"} value={`${stats.units ? stats.units : 0}`} />
+                <OrderAnalyticsCard title="Promedio diario de ordenes" value={`${stats.ordersPerDayAvg ? stats.ordersPerDayAvg.toFixed(2) : 0}`} />
+                <OrderAnalyticsCard title={"Total unidades"} value={`${stats.units ? stats.units : 0}`} />
             </div>
             <div>
                 {performance ? (
@@ -341,36 +382,38 @@ const OrderAnalytics = () => {
                          <table>
                          <thead>
                              <tr>
-                                 <th>#</th>
-                                 <th>Fecha/Hora</th>
-                                 <th>Usuario</th>
-                                 <th>Productos</th>
-                                 <th>Total</th>
-                                 <th>Metodo de pago</th>
+                                <th>#</th>
+                                <th>Fecha/Hora</th>
+                                <th>Usuario</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                                <th>Metodo de pago</th>
+                                <th>Estado</th>        
                              </tr>
                          </thead>
                          <tbody>
                              {orders.map((order) => { 
                                  return (
                                      <tr>
-                                         <td>{order.id}</td>
-                                         <td>{order.dateTime.toLocaleString()}</td>
-                                         <td>{order.userName}</td>
-                                         <td>
-                                         {
-                                             order.items.map((item: any) => {
-                                                 return (
-                                                     <div>
-                                                         <span>{item.name}: </span>
-                                                         <span>{item.price.toFixed(2)} BS x</span>
-                                                         <span className="text-accent-1">{item.quantity} = {item.subtotal} BS</span>
-                                                     </div>
-                                                 )
-                                              })
-                                         }
-                                         </td>
-                                         <td>{order.total.toFixed(2)} BS</td>
-                                         <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                        <td>{order.id}</td>
+                                        <td>{order.dateTime.toLocaleString()}</td>
+                                        <td>{order.userName}</td>
+                                        <td>
+                                        {
+                                            order.items.map((item: any) => {
+                                                return (
+                                                    <div>
+                                                        <span>{item.name}: </span>
+                                                        <span>{item.price.toFixed(2)} BS x</span>
+                                                        <span className="text-accent-1">{item.quantity} = {item.subtotal} BS</span>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                        </td>
+                                        <td>{order.total.toFixed(2)} BS</td>
+                                        <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                        <td>{order.status == 1 ? "Pendiente" : order.status == 2 ? "Finalizada" :  "Cancelada"}</td>   
                                      </tr>
                                  )
                              })}

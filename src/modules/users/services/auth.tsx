@@ -22,6 +22,11 @@ class authService {
             required_error: "El tipo de usuario es requerido."
         }).min(1, { message: "El tipo de usuario es requerido." }),
         user_reference: z.string().optional(),
+        username: z.string({
+            required_error: "El nombre de usuario es requerido."
+        }).trim()
+            .min(3, { message: "El nombre de usuario debe ser mayor o igual a 8 caracteres." })
+            .max(50, { message: "El nombre de usuario debe ser menor o igual a 50 caracteres." }).min(1, { message: "El nombre de usuario es requerido." }),
         photo: z.string().optional().nullable(),
     })
 
@@ -61,6 +66,7 @@ class authService {
 
     public static async loadUser() {
         const idStr = localStorage.getItem('userId')
+        console.log('pichi')
 
         if (!idStr) {
             return null
@@ -125,7 +131,6 @@ class authService {
 
             let generatedPassword = password.randomPassword({ characters: [password.upper, password.lower, password.digits] });
             user.password = await bcrypt.hash(generatedPassword, 10);
-            user.username = this.generateUsername(user.names, user.last_names);
             user.lastNames = user.last_names;
             user.userType = user.user_type;
             user.userReference = user.user_reference;

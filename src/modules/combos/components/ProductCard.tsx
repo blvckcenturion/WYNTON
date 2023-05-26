@@ -17,7 +17,7 @@ const ProductCard = ({ product, index, handleProductQty, handleProductSelect }: 
                     <FontAwesomeIcon icon={faMinus} />
                 </button>
                 <div className="text-white font-bold rounded focus:outline-none focus:shadow-outline">
-                    <p>{product.qty}</p>
+                    <input className="text-center" type="number" value={product.qty} onChange={(e) => handleProductQty(product, parseInt(e.target.value))} />
                 </div>
                 <button className="text-white font-bold rounded focus:outline-none focus:shadow-outline" type="button" onClick={() => handleProductQty(product, product.qty+1)}>
                     <FontAwesomeIcon icon={faPlus} />

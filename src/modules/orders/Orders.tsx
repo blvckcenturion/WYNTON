@@ -83,6 +83,8 @@ const Orders = ({user} : {user: any}) => {
 
     const loadPendingOrders = async () => { 
         let pendingOrders: any[] = await orderService.load(1)
+        console.log(user)
+        pendingOrders = pendingOrders.filter((order: any) => order.user_id == user.id)
         pendingOrders = pendingOrders.map((order: any) => {
             order.items = order.items.map((item: any) => {
                 if (item.product_id) {
@@ -430,7 +432,7 @@ const Orders = ({user} : {user: any}) => {
                 </div>
                 <div className={`place-order-section ${editOrderMode ? "edit-order" : ""}`}>
                     <div>
-                        <div>
+                        <div className="order-title-card">
                             <h3>{editOrderMode ? `Orden #${editOrder.id}` : "Ordenes Pendientes"}</h3>
                         </div>
                         {!editOrderMode ? (
@@ -453,7 +455,7 @@ const Orders = ({user} : {user: any}) => {
                         ) : null}
                     </div>
                     <div>
-                        <div>
+                        <div className="order-title-card">
                             <h3>Resumen</h3>
                         </div>
                         <div>
@@ -465,14 +467,14 @@ const Orders = ({user} : {user: any}) => {
                                 </div>
                             )}
                         </div>
-                        <div>
+                        <div className="order-title-card">
                             <h4>Total</h4>
                             <p>
                                 {getTotal(productsCreate, combosCreate).toFixed(2)} BS
                             </p>
                         </div>
                         <div>
-                            <button disabled={(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length) === 0 && !editOrderMode || (getSelectedCombos(combosEdit).length + getSelectedProducts(productsEdit).length) === 0 && editOrderMode} onClick={() => editOrderMode ? setConfirmOrderModalEdit(true) : setConfirmOrderModal(true) }>{editOrderMode ? "Editar detalles de" : "Crear"} orden</button>
+                            <button disabled={(getSelectedCombos(combosCreate).length + getSelectedProducts(productsCreate).length) === 0 && !editOrderMode || (getSelectedCombos(combosEdit).length + getSelectedProducts(productsEdit).length) === 0 && editOrderMode} onClick={() => editOrderMode ? setConfirmOrderModalEdit(true) : setConfirmOrderModal(true) }>{editOrderMode ? "Confirmar " : "Crear"} orden</button>
                             {editOrderMode ? (
                                 <>
                                     <button onClick={() => handleCancelOrder(editOrder.id)}>Eliminar orden</button>

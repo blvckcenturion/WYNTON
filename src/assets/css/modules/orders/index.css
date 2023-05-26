@@ -1,5 +1,6 @@
 @import "./components/Card.css";
 @import "./components/OrderAnalytics.css";
+@import "./components/DailyOrders.css";
 
 .orders-module{
     width: 100%;
@@ -20,7 +21,6 @@
             background: var(--bg-accent);
             height: 100%;
             width: 65%;
-
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -125,6 +125,7 @@
                 color: var(--accent-color-1);
                 font-size: 1.3rem;
                 font-family: var(--main-font);
+                
             }
             > div{
                 width: 100%;
@@ -133,6 +134,7 @@
                 align-items: center;
                 justify-content: space-around;
                 div.no-results{
+                    
                     display: flex;
                     h4{
                         text-align: center;
@@ -163,7 +165,6 @@
                             margin-bottom: 10px;
                         }
                         &:nth-child(2){
-                            
                             margin-top: 10px;
                             height: 82%;
                             width: 100%;
@@ -172,6 +173,7 @@
                             &::-webkit-scrollbar {
                                 width: 10px;
                             }
+                            
                             
                             &::-webkit-scrollbar-track {
                                 background-color: transparent;
@@ -233,6 +235,7 @@
                                 margin: 10px 0;
                                 box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
                             }
+                            
                         }
                         &:nth-of-type(3){
                             margin-top: 10px;
@@ -553,22 +556,20 @@
             justify-content: space-evenly;
             button{
                 transition: all 0.5s ease-in-out;
+                color: var(--bg-accent);
                 &:nth-of-type(1){
-                    border-color: var(--main-color);
-                    color: var(--main-color);
+                    background-color: var(--accent-color-1);
                     &:hover{
-                        border-color: transparent;
                         background: var(--main-color);
                         color: white;
                     }
                 }
                 &:nth-of-type(2){
-                    border-color: limegreen;
-                    color: limegreen;
+                    background-color: limegreen;
+                    
                     &:hover{
                         border-color: transparent;
-                        background: limegreen;
-                        color: white;
+                        background: mediumseagreen;
                     }
                 }
                 padding: 1.5vh;
