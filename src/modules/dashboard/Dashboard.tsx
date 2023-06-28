@@ -13,12 +13,12 @@ import authService from "../users/services/auth";
 import capitalize from "../utils/functions/capitalize";
 import { exists } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import Modal from "../utils/components/Modal";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
 import OrderAnalytics from "../orders/OrdersHistory";
 import ActionModal from "../utils/components/ActionModal";
 import DailyOrders from "../orders/DailyOrders";
+import Modal from "../utils/components/Modal";
 
 const Dashboard = () => { 
 

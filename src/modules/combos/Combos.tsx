@@ -1,13 +1,13 @@
 import { faAdd, faEdit, faFileImage, faTrash } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState } from "react"
-import Modal from "../utils/components/Modal"
-import ActionModal from "../utils/components/ActionModal"
 import productService from "../menu/services/product"
 import comboService from "./services/combo"
 import capitalize from "../utils/functions/capitalize"
 import elementSearch from "../utils/functions/elementSearch"
 import ComboForm from "./components/ComboForm"
+import Modal from "../utils/components/Modal"
+import ActionModal from "../utils/components/ActionModal"
 
 const Combos = () => {
     const [combosSearchTerm, setCombosSearchTerm] = useState("")

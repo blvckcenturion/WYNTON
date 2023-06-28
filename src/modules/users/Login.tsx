@@ -21,8 +21,8 @@ function Login() {
 
     const login = useFormik({
         initialValues: {
-          username: "admin",
-          password: "admin",
+          username: "",
+          password: "",
         },
         onSubmit: async (values) => {
           try {
