@@ -41,6 +41,11 @@ const Orders = ({user} : {user: any}) => {
     const [orderToEdit, setOrderToEdit] = useState<number>(0)
     const [editOrderMode, setEditOrderMode] = useState<boolean>(false)
     const [editOrder, setEditOrder] = useState<any>(null)
+    const [confirmShowCalculateChange, setConfirmShowCalculateChange] = useState<boolean>(false)
+    const [showChangeModal, setShowChangeModal] = useState<boolean>(false)
+    const [amount, setAmount] = useState<number>(0)
+    const [paymentAmount, setPaymentAmount] = useState<number>(0)
+    
 
     useEffect(() => {
         (async () => {
@@ -326,7 +331,12 @@ const Orders = ({user} : {user: any}) => {
     const handleConfirmFinalizeOrder = async () => {
         await orderService.updateStatus({ id: orderToFinalize, status: 2 });
         setShowFinalizeOrderConfirmation(false)
+        console.log(pendingOrders)
+        const orderAmount = pendingOrders.filter(order => order.id === orderToFinalize)[0].items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
         loadPendingOrders()
+        setAmount(orderAmount)
+        setConfirmShowCalculateChange(true)
+        
     }
 
 
@@ -383,8 +393,16 @@ const Orders = ({user} : {user: any}) => {
         setEditOrder(editOrder)
         setProductSearchTerm("")
         setPaymentMethod(editOrder.payment_method)
-        // Usuario: asd23asd2168846
-        // Contraseña: UP2Npjw4hPQn
+    }
+
+    const handleConfirmCalculateChange = () => {
+        setConfirmShowCalculateChange(false)
+        setShowChangeModal(true)
+    }
+
+    const calculateChange = () => {
+        const change = paymentAmount - amount;
+        return !change ? 0 : change < 0 ? 0 : change
     }
                     
     return (
@@ -531,9 +549,32 @@ const Orders = ({user} : {user: any}) => {
                     </div>
                 </div>
             </Modal>
+            <Modal className="calculate-change-modal" title={"Calcular monto de cambio"} showModal={showChangeModal} onClose={() => setShowChangeModal(false)}>
+                <div>
+                    <div>
+                        <h4>Total de la orden</h4>
+                        <p>{amount.toFixed(2)} BS</p>
+                    </div>
+                    <div>
+                        <h4>Monto de pago</h4>
+                        <input type="number" value={paymentAmount} onChange={(event) => setPaymentAmount(parseFloat(event.target.value))}></input>
+                    </div>
+                    <div>
+                        <h4>Cambio</h4>
+                        <p>{calculateChange()} BS</p>
+                    </div>
+                    <div>
+                        <button onClick={() => setShowChangeModal(false)}>
+                            <FontAwesomeIcon icon={faCancel} />
+                            &nbsp; Cerrar Ventana
+                        </button>
+                    </div>
+                </div>
+            </Modal>
             <ActionModal title="Alerta!" body={`¿Esta seguro que desea cancelar la orden #${orderToCancel}?`} showModal={showCancelOrderConfirmation} onConfirm={handleConfirmCancelOrder} onCancel={() => setShowCancelOrderConfirmation(false)}/>
             <ActionModal title="Alerta!" body={`¿Esta seguro que desea editar la orden #${orderToEdit}?`} showModal={showEditOrderConfirmation} onConfirm={handleConfirmEditOrder} onCancel={() => setShowEditOrderConfirmation(false)}/>
-            <ActionModal title="Alerta!" body={`¿Esta seguro que desea finalizar la orden #${orderToFinalize}?`} showModal={showFinalizeOrderConfirmation} onConfirm={handleConfirmFinalizeOrder} onCancel={() => setShowFinalizeOrderConfirmation(false)}/>
+            <ActionModal title="Alerta!" body={`¿Esta seguro que desea finalizar la orden #${orderToFinalize}?`} showModal={showFinalizeOrderConfirmation} onConfirm={handleConfirmFinalizeOrder} onCancel={() => setShowFinalizeOrderConfirmation(false)} />
+            <ActionModal title="Alerta!" body={`¿Desea realizar el calculo de cambio para la orden #${orderToFinalize}?`} showModal={confirmShowCalculateChange} onConfirm={handleConfirmCalculateChange} onCancel={() => setConfirmShowCalculateChange(false)}/>
         </>
     );
 };

@@ -346,7 +346,6 @@ const OrderAnalytics = () => {
             <div>
                 {performance ? (
                     <div className="table item-table performance">
-                        
                         <table>
                             <thead>
                                 <tr>
