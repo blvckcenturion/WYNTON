@@ -68,87 +68,96 @@ const OrderAnalytics = () => {
     }, [])
 
     const calculateOrderStats = async (orders: any[]) => { 
-        let total = 0
-        let units = 0
-        let totalOrders = orders.length
-        let ordersPerDay: any[] = []
-        let ordersPerDayAvg = 0
-        let mostSoldProducts: any[] = []
-        let bestUserSellers: any[] = []
-        let mostUsedPaymentMethods: any[] = []
-
+        let total = 0;
+        let units = 0;
+        let totalOrders = orders.length;
+        let ordersPerDay: any[] = [];
+        let ordersPerDayAvg = 0;
+        let mostSoldProducts: any[] = [];
+        let bestUserSellers: any[] = [];
+        let mostUsedPaymentMethods: any[] = [];
+        let paymentTypeTotals: any[] = []; // Object to store payment type totals
+    
         orders.forEach((order) => { 
-            total += order.total
+            total += order.total;
             units += order.items.reduce((acc: number, item: any) => { 
-                return acc + item.quantity
-            }, 0)
-            let date = new Date(order.createdAt)
-            let dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
-            let orderPerDay = ordersPerDay.find((orderPerDay) => orderPerDay.date === dateStr)
+                return acc + item.quantity;
+            }, 0);
+            let date = new Date(order.createdAt);
+            let dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            let orderPerDay = ordersPerDay.find((orderPerDay) => orderPerDay.date === dateStr);
             if (orderPerDay) {
-                orderPerDay.orders.push(order)
-            }
-            else {
+                orderPerDay.orders.push(order);
+            } else {
                 ordersPerDay.push({
                     date: dateStr,
                     orders: [order]
-                })
+                });
             }
-
+    
             order.items.forEach((item: any) => {
-                let product = mostSoldProducts.find((product) => product.productId === item.productId || product.comboId === item.comboId)
+                let product = mostSoldProducts.find((product) => product.productId === item.productId || product.comboId === item.comboId);
                 if (product) {
-                    product.quantity += item.quantity
+                    product.quantity += item.quantity;
                 } else {
                     mostSoldProducts.push({
                         productId: item.productId,
                         comboId: item.comboId,
                         name: item.name,
                         quantity: item.quantity
-                    })
+                    });
                 }
-            })
+            });
+    
+            let paymentMethod = mostUsedPaymentMethods.find((paymentMethod) => paymentMethod.paymentMethod === order.paymentMethod);
+            let paymentType = paymentTypeTotals.find((paymentType) => paymentType.paymentMethod === order.paymentMethod);
+            if (paymentMethod && paymentType) {
+                paymentMethod.quantity += 1;
+                paymentType.quantity += order.total; 
+            } else {
+                mostUsedPaymentMethods.push({
+                    paymentMethod: order.paymentMethod,
+                    quantity: 1
+                });
 
-            let paymentMethod = mostUsedPaymentMethods.find((paymentMethod) => paymentMethod.paymentMethod === order.paymentMethod)
-                if (paymentMethod) {
-                    paymentMethod.quantity += 1
-                }
-                else {
-                    mostUsedPaymentMethods.push({
-                        paymentMethod: order.paymentMethod,
-                        quantity: 1
-                    })
-                }
+                paymentTypeTotals.push({
+                    paymentMethod: order.paymentMethod,
+                    quantity: order.total
+                })
+            }
 
-            let seller = bestUserSellers.find((seller) => seller.userId === order.userId)
+            console.log(paymentTypeTotals)
+    
+            let seller = bestUserSellers.find((seller) => seller.userId === order.userId);
             if (seller) {
                 seller.total += order.items.reduce((acc: number, item: any) => { 
-                    return acc + item.quantity
-                }, 0)
+                    return acc + item.quantity;
+                }, 0);
             } else {
                 bestUserSellers.push({
                     userId: order.userId,
                     userName: order.userName,
                     total: order.items.reduce((acc: number, item: any) => {
-                        return acc + item.quantity
+                        return acc + item.quantity;
                     }, 0)
-                })
+                });
             }
-        })
-
+        });
+    
         mostSoldProducts = mostSoldProducts.sort((a, b) => {
-            return b.quantity - a.quantity
-        })
-
+            return b.quantity - a.quantity;
+        });
+        
+        console.log(mostUsedPaymentMethods)
         ordersPerDayAvg = ordersPerDay.reduce((acc: number, orderPerDay: any) => {
-            return acc + orderPerDay.orders.length
-        }, 0) / ordersPerDay.length
-
+            return acc + orderPerDay.orders.length;
+        }, 0) / ordersPerDay.length;
+    
         mostUsedPaymentMethods = mostUsedPaymentMethods.sort((a, b) => {
-            return b.quantity - a.quantity
-        })
-        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers, mostUsedPaymentMethods }
-    } 
+            return b.quantity - a.quantity;
+        });
+        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers, mostUsedPaymentMethods, paymentTypeTotals };
+    }
 
     const handleUserChange = async (e: any) => { 
         if (e.target.value !== "" && (performance === "2" || performance === "3")) { 
@@ -287,7 +296,8 @@ const OrderAnalytics = () => {
                             {user == "" ? (
                                 <>
                                     <option value="2">Usuarios</option>
-                                    <option value="3">Metodos de pago</option>
+                                    <option value="3">Ordenes por tipo de pago</option>
+                                    <option value="4">Suma por tipo de pago</option>
                                 </>
                             ) : null}
                         </select>
@@ -341,7 +351,9 @@ const OrderAnalytics = () => {
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    {performance == "3" ? <th>Cantidad</th> : <th>Unidades</th>}
+                                    {performance === "2" ? <th>Total</th> : null}
+                                    {(performance === "3" || performance === "1") ? <th>Cantidad</th> : null}
+                                    {performance === "4" ? <th>Suma (BS)</th> : null}
                                 </tr>
                             </thead>
                             <tbody>
@@ -362,6 +374,14 @@ const OrderAnalytics = () => {
                                     )
                                 })}
                                 {performance == "3" && stats.mostUsedPaymentMethods && stats.mostUsedPaymentMethods.map((paymentMethod: any) => {
+                                    return (
+                                        <tr>
+                                            <td>{paymentMethod.paymentMethod == 1 ? "Tarjeta" : paymentMethod.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                            <td>{paymentMethod.quantity}</td>
+                                        </tr>
+                                    )
+                                })}
+                                {performance == "4" && stats.paymentTypeTotals && stats.paymentTypeTotals.map((paymentMethod: any) => {
                                     return (
                                         <tr>
                                             <td>{paymentMethod.paymentMethod == 1 ? "Tarjeta" : paymentMethod.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
