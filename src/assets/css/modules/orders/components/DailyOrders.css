@@ -13,7 +13,20 @@
     }
     > div.table.orders{
         color: var(--main-color);
-        height: 90%;
+        height: 80%;
         border-radius: 8px;
     }
+}
+
+.daily-orders-module .filters {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-bottom: 20px;
+}
+
+.daily-orders-module .filters label,
+.daily-orders-module .filters select {
+
+    padding: 10px;
 }

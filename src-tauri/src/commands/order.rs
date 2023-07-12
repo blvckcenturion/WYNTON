@@ -6,12 +6,14 @@ use crate::AppState;
 pub fn create_order(
     user_id: i32,
     payment_method: i32,
+    order_type: i32,
     state: tauri::State<AppState>,
 ) -> String {
     let conn = &mut state.conn.lock().unwrap();
     let order = OrderNew {
         user_id: user_id,
-        payment_method: payment_method
+        payment_method: payment_method,
+        order_type: order_type 
     };
     services::order::create(conn, &order);
 

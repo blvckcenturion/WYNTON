@@ -97,11 +97,11 @@
       {
         "title": "WYNTON",
         "fullscreen": false,
-        "height": 700,
-        "minWidth": 1000,
-        "minHeight": 700,
+        "height": 800,
+        "minWidth": 1200,
+        "minHeight": 800,
         "resizable": true,
-        "width": 1000
+        "width": 1200
       }
     ]
   }

@@ -385,7 +385,6 @@
 
     .confirm-order-modal{
         > div{
-            
             max-height:98%;
             width: 45%;
            > div{
@@ -394,6 +393,7 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-evenly;
+                
                 h4{
                     font-size: 1.2rem;
                     -ms-word-break: keep-all;
@@ -427,7 +427,6 @@
                                 text-align: center;
                                 color: var(--accent-color-2);
                                 margin: 5px 0;
-                                
                             }
                             > div{
                                 display: flex;
@@ -437,7 +436,7 @@
                                 > div{
                                     max-height: 25vh;
                                     &.max{
-                                        max-height: 40vh;
+                                        max-height: 45vh;
                                     }
                                     overflow-y: auto;
                                     scrollbar-gutter: stable;
@@ -467,16 +466,18 @@
                         }
                         &:nth-of-type(3){
                             margin-top:10px;
-                            height: 10vh;
+                            height: 15vh;
                             display: flex;
                             flex-direction: column;
                             align-items: center;
                             justify-content: space-evenly;
                             > div{
+                                margin-bottom: 5px;
                                 width: 75%;
                                 display: grid;
                                 grid-template-columns: repeat(2, 1fr);
                                 select{
+                                    width:100%;
                                     padding: 5px;
                                 }
                                 

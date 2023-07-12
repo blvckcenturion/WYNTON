@@ -53,6 +53,7 @@ diesel::table! {
         createdAt -> Timestamp,
         updatedAt -> Nullable<Timestamp>,
         status -> Integer,
+        order_type -> Integer,
     }
 }
 

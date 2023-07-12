@@ -45,7 +45,8 @@ const Orders = ({user} : {user: any}) => {
     const [showChangeModal, setShowChangeModal] = useState<boolean>(false)
     const [amount, setAmount] = useState<number>(0)
     const [paymentAmount, setPaymentAmount] = useState<number>(0)
-    
+    const [orderType, setOrderType] = useState<number>(1)
+
 
     useEffect(() => {
         (async () => {
@@ -88,7 +89,6 @@ const Orders = ({user} : {user: any}) => {
 
     const loadPendingOrders = async () => { 
         let pendingOrders: any[] = await orderService.load(1)
-        console.log(user)
         pendingOrders = pendingOrders.filter((order: any) => order.user_id == user.id)
         pendingOrders = pendingOrders.map((order: any) => {
             order.items = order.items.map((item: any) => {
@@ -256,6 +256,7 @@ const Orders = ({user} : {user: any}) => {
         let order = {
             items: items,
             userId: user.id,
+            orderType: orderType,
             paymentMethod: paymentMethod
         }
 
@@ -534,6 +535,13 @@ const Orders = ({user} : {user: any}) => {
                                 <option value="1">Tarjeta</option>
                                 <option value="2">QR</option>
                                 <option value="3">Efectivo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <h4>Tipo de orden</h4>
+                            <select id="orderType" onChange={(e) => setOrderType(parseInt(e.target.value))} value={orderType}>
+                                <option value="1">Orden de tienda</option>
+                                <option value="2">Orden de PedidosYa</option>
                             </select>
                         </div>
                         <div>

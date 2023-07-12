@@ -13,6 +13,7 @@ pub struct Order {
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub status: i32,
+    pub order_type: i32
 }
 
 #[derive(Insertable, Serialize, Debug, Clone)]
@@ -20,6 +21,7 @@ pub struct Order {
 pub struct OrderNew {
     pub user_id: i32,
     pub payment_method: i32,
+    pub order_type: i32
 }
 
 #[derive(Queryable, Serialize, Debug)]

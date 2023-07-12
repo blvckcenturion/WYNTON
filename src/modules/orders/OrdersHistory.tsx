@@ -3,6 +3,7 @@ import authService from "../users/services/auth";
 import orderService from "./services/orders";
 import convertUTCDateToLocalDate from "../utils/functions/convertUTCDateToLocalDate";
 import capitalize from "../utils/functions/capitalize";
+import categoryService from "../menu/services/category";
 
 const OrderAnalytics = () => {
 
@@ -15,6 +16,7 @@ const OrderAnalytics = () => {
     const [stats, setStats] = useState<any>({})
     const [performance, setPerformance] = useState<any>("")
     const [status, setStatus] = useState<any>("")
+    const [orderType, setOrderType] = useState<any>("");
 
     useEffect(() => {
         (async () => {
@@ -28,6 +30,7 @@ const OrderAnalytics = () => {
             orders = orders.concat(canceledOrders)
             orders = orders.concat(pendingOrders)
 
+            let categories = await categoryService.load();
             
             orders = orders.map((order) => {
                 let user = users.find((user) => user.id === order.user_id)
@@ -47,10 +50,13 @@ const OrderAnalytics = () => {
                             comboId: item.combo_id,
                             productId: item.product_id,
                             id: item.id,
+                            categoryId: item.product.category_id,
+                            categoryName: categories.find((category: any) => category.id === item.product.category_id)?.name,
                             name: capitalize(item.product ? item.product.name : item.combo.denomination),
                         }
                     }),
                     status: order.status,
+                    orderType: order.order_type,
                     userName: user ? `${user.names} ${user.last_names}` : "Super Admin",
                     dateTime: convertUTCDateToLocalDate(new Date(order.created_at))
                 }
@@ -77,7 +83,9 @@ const OrderAnalytics = () => {
         let bestUserSellers: any[] = [];
         let mostUsedPaymentMethods: any[] = [];
         let paymentTypeTotals: any[] = []; // Object to store payment type totals
-    
+        let orderTypeCounts: any[] = [];
+        let categoryCounts: any[] = [];
+
         orders.forEach((order) => { 
             total += order.total;
             units += order.items.reduce((acc: number, item: any) => { 
@@ -125,8 +133,6 @@ const OrderAnalytics = () => {
                     quantity: order.total
                 })
             }
-
-            console.log(paymentTypeTotals)
     
             let seller = bestUserSellers.find((seller) => seller.userId === order.userId);
             if (seller) {
@@ -142,13 +148,40 @@ const OrderAnalytics = () => {
                     }, 0)
                 });
             }
+
+            let orderTypeCount = orderTypeCounts.find((orderTypeCount) => orderTypeCount.orderType === order.orderType);
+            if (orderTypeCount) {
+                orderTypeCount.quantity += 1;
+            } else {
+                orderTypeCounts.push({
+                    orderType: order.orderType,
+                    quantity: 1
+                });
+            }
+        });
+
+        orders.forEach((order) => {
+            order.items.forEach((item: any) => {
+                let categoryId = item.categoryId || 'no-category';
+                let categoryName = item.categoryName || 'Sin Categoria';
+        
+                let category = categoryCounts.find((categoryCount) => categoryCount.categoryId === categoryId);
+                if (category) {
+                    category.quantity += item.quantity;
+                } else {
+                    categoryCounts.push({
+                        categoryId: categoryId,
+                        categoryName: categoryName,
+                        quantity: item.quantity
+                    });
+                }
+            });
         });
     
         mostSoldProducts = mostSoldProducts.sort((a, b) => {
             return b.quantity - a.quantity;
         });
-        
-        console.log(mostUsedPaymentMethods)
+
         ordersPerDayAvg = ordersPerDay.reduce((acc: number, orderPerDay: any) => {
             return acc + orderPerDay.orders.length;
         }, 0) / ordersPerDay.length;
@@ -156,7 +189,8 @@ const OrderAnalytics = () => {
         mostUsedPaymentMethods = mostUsedPaymentMethods.sort((a, b) => {
             return b.quantity - a.quantity;
         });
-        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers, mostUsedPaymentMethods, paymentTypeTotals };
+
+        return { total, units, totalOrders, ordersPerDay, ordersPerDayAvg, mostSoldProducts, bestUserSellers, mostUsedPaymentMethods, paymentTypeTotals, orderTypeCounts, categoryCounts };
     }
 
     const handleUserChange = async (e: any) => { 
@@ -165,14 +199,14 @@ const OrderAnalytics = () => {
         }
         setUser(e.target.value)
         
-        let { orders, stats } = await loadOrders(e.target.value, startDate, endDate, status)
+        let { orders, stats } = await loadOrders(e.target.value, startDate, endDate, status, orderType)
         
         setStats(stats)
         setOrders(orders)
 
     }
 
-    const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null, status: any | null) => {
+    const loadOrders = async (userFilter: any | null, startDateFilter: any | null, endDateFilter: any | null, status: any | null, orderTypeFilter: any | null) => {
         let orders = allOrders
 
         if (userFilter !== "" && userFilter !== null) { 
@@ -203,8 +237,13 @@ const OrderAnalytics = () => {
             })
         }
 
+        if (orderTypeFilter !== "" && orderTypeFilter !== null) {
+            orders = orders.filter((order) => {
+                return order.orderType == parseInt(orderTypeFilter);
+            });
+        }
+
         let stats;
-        console.log(status)
         if (status !== "" && status !== null) {
             orders = orders.filter((order) => {
                 return order.status == parseInt(status)
@@ -219,6 +258,13 @@ const OrderAnalytics = () => {
         return { orders, stats}
     }
 
+    const handleOrderTypeChange = async (e: any) => {
+        setOrderType(e.target.value);
+        let { orders, stats } = await loadOrders(user, startDate, endDate, status, e.target.value);
+        setStats(stats);
+        setOrders(orders);
+    }
+
     const handleStartDateChange = async (e: any) => {
         if (endDate != "" && endDate != undefined) { 
             if (e.target.value > endDate) {
@@ -227,7 +273,7 @@ const OrderAnalytics = () => {
         }
         setStartDate(e.target.value)
         
-        let { orders, stats } = await loadOrders(user, e.target.value, endDate, status)
+        let { orders, stats } = await loadOrders(user, e.target.value, endDate, status,orderType)
         
         setStats(stats)
         setOrders(orders)
@@ -241,7 +287,7 @@ const OrderAnalytics = () => {
         }
         setEndDate(e.target.value)
 
-        let { orders, stats } = await loadOrders(user, startDate, e.target.value, status)
+        let { orders, stats } = await loadOrders(user, startDate, e.target.value, status, orderType)
         
         setStats(stats)
         setOrders(orders)
@@ -250,7 +296,7 @@ const OrderAnalytics = () => {
     const handleStatusChange = async (e: any) => { 
         setStatus(e.target.value)
 
-        let { orders, stats } = await loadOrders(user, startDate, endDate, e.target.value)
+        let { orders, stats } = await loadOrders(user, startDate, endDate, e.target.value, orderType)
 
         setStats(stats)
         setOrders(orders)
@@ -262,8 +308,10 @@ const OrderAnalytics = () => {
         setEndDate("")
         setUser("")
         setStatus("")
+        setOrderType("")
+        setPerformance("")
 
-        let { orders, stats } = await loadOrders(null, null, null, null)
+        let { orders, stats } = await loadOrders(null, null, null, null, null)
 
         setStats(stats)
         setOrders(orders)
@@ -272,7 +320,7 @@ const OrderAnalytics = () => {
     return (
         <div className="order-analytics-module">
             <div>
-                <form className={`${(startDate != "" || endDate != "" || status != "") ? "" : "no-filters"}`}>
+                <form className={`${(startDate != "" || endDate != "" || status != "" || orderType != "" || performance != "") ? "" : "no-filters"}`}>
                     <div>
                         <label htmlFor="orderUser">
                             Usuario
@@ -298,8 +346,20 @@ const OrderAnalytics = () => {
                                     <option value="2">Usuarios</option>
                                     <option value="3">Ordenes por tipo de pago</option>
                                     <option value="4">Suma por tipo de pago</option>
+                                    <option value="5">Ordenes por tipo</option>
+                                    <option value="6">Categorías</option>
                                 </>
                             ) : null}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="orderType">
+                            Tipo de Orden
+                        </label>
+                        <select name="orderType" id="orderType" value={orderType} onChange={handleOrderTypeChange}>
+                            <option value="">Todos</option>
+                            <option value="1">Orden de tienda</option>
+                            <option value="2">Orden de PedidosYa</option>
                         </select>
                     </div>
                     {/* Filter by status */}
@@ -327,7 +387,7 @@ const OrderAnalytics = () => {
                         <input type="date" name="orderEndDate" id="orderEndDate" value={endDate} onChange={handleEndDateChange}/>
                     </div>
                     
-                    {(startDate != "" || endDate != "" || status != "") ? (
+                    {(startDate != "" || endDate != "" || status != "" || orderType != "" || performance != "") ? (
                         <div>
                             <button type="button" onClick={cleanFilters}>
                                 Limpiar 
@@ -351,7 +411,7 @@ const OrderAnalytics = () => {
                                 <tr>
                                     <th>Nombre</th>
                                     {performance === "2" ? <th>Total</th> : null}
-                                    {(performance === "3" || performance === "1") ? <th>Cantidad</th> : null}
+                                    {(performance === "3" || performance === "1" || performance === "5" || performance === "6") ? <th>Cantidad</th> : null}
                                     {performance === "4" ? <th>Suma (BS)</th> : null}
                                 </tr>
                             </thead>
@@ -388,6 +448,22 @@ const OrderAnalytics = () => {
                                         </tr>
                                     )
                                 })}
+                                {performance == "5" && stats.orderTypeCounts && stats.orderTypeCounts.map((orderTypeCount: any) => {
+                                    return (
+                                        <tr>
+                                            <td>{orderTypeCount.orderType == 1 ? "Orden de tienda" : "Orden de PedidosYa"}</td>
+                                            <td>{orderTypeCount.quantity}</td>
+                                        </tr>
+                                    )
+                                })}
+                                {performance == "6" && stats.categoryCounts && stats.categoryCounts.map((categoryCount: any) => {
+                                    return (
+                                        <tr>
+                                            <td>{categoryCount.categoryName}</td>
+                                            <td>{categoryCount.quantity}</td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -407,6 +483,7 @@ const OrderAnalytics = () => {
                                 <th>Productos</th>
                                 <th>Total</th>
                                 <th>Metodo de pago</th>
+                                <th>Tipo de orden</th>
                                 <th>Estado</th>        
                              </tr>
                          </thead>
@@ -432,6 +509,7 @@ const OrderAnalytics = () => {
                                         </td>
                                         <td>{order.total.toFixed(2)} BS</td>
                                         <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                         <td>{order.orderType == 1 ? "Orden de tienda" : "Orden de PedidosYa"} </td>
                                         <td>{order.status == 1 ? "Pendiente" : order.status == 2 ? "Finalizada" :  "Cancelada"}</td>   
                                      </tr>
                                  )

@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api"
 import { toast } from "react-toastify"
-import { z } from "zod"
 import displayError from "../../utils/functions/displayError"
 
 class orderService {

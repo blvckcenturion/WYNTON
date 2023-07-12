@@ -5,6 +5,8 @@ import capitalize from "../utils/functions/capitalize";
 
 const DailyOrders = ({user}: {user: any}) => { 
     const [dailyOrders, setDailyOrders] = useState<any[]>([])
+    const [status, setStatus] = useState<any>("")
+    const [orderType, setOrderType] = useState<any>("")
 
     useEffect(() => {
         (async () => {
@@ -16,12 +18,30 @@ const DailyOrders = ({user}: {user: any}) => {
             dailyOrders = dailyOrders.filter((order: any) => {
                 return order.user_id === user.id
             })
+            console.log(dailyOrders)
             dailyOrders = dailyOrders.filter((order: any) => {
-                let today = convertUTCDateToLocalDate(new Date())
+                let today = convertUTCDateToLocalDate(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())));
                 let orderDate = convertUTCDateToLocalDate(new Date(order.created_at))
                 today = new Date(today.getFullYear(), today.getMonth(), today.getDate())
                 return orderDate >= today
             })
+
+            dailyOrders = dailyOrders.filter((order: any) => {
+                // ... existing code ...
+
+                // Filter by status if specified
+                if (status !== "" && status !== null) {
+                    return order.status == parseInt(status);
+                }
+
+                // Filter by order type if specified
+                if (orderType !== "" && orderType !== null) {
+                    return order.order_type == parseInt(orderType);
+                }
+
+                return true;
+            })
+
 
             dailyOrders = dailyOrders.map((order: any) => { 
                 return {
@@ -29,7 +49,8 @@ const DailyOrders = ({user}: {user: any}) => {
                     total: order.items.reduce((acc : number, item : any) => { 
                         return acc + (item.price * item.quantity)
                     }, 0),
-                    payment_method: order.payment_method,
+                    paymentMethod: order.payment_method,
+                    orderType: order.order_type,
                     items: order.items.map((item: any) => { 
                         return {
                             price: item.price,
@@ -45,15 +66,43 @@ const DailyOrders = ({user}: {user: any}) => {
                     dateTime: convertUTCDateToLocalDate(new Date(order.created_at)),
                 }
             })
-            console.log(dailyOrders)
-
             setDailyOrders(dailyOrders)
             
         })()
-    }, [])
+    }, [status, orderType])
+
+    const handleStatusChange = (e: any) => { 
+        setStatus(e.target.value)
+    }
+
+    const handleOrderTypeChange = (e: any) => { 
+        setOrderType(e.target.value)
+    }
+
+
     return (
         <div className="daily-orders-module">
             <h1>Ordenes del dia</h1>
+            <div className="filters">
+                <label htmlFor="orderStatus">
+                    Estado
+                </label>
+                <select name="orderStatus" id="orderStatus" value={status} onChange={handleStatusChange}>
+                    <option value="">Todos</option>
+                    <option value="0">Cancelada</option>
+                    <option value="1">Pendiente</option>
+                    <option value="2">Finalizada</option>
+                </select>
+
+                <label htmlFor="orderType">
+                    Tipo de orden
+                </label>
+                <select name="orderType" id="orderType" value={orderType} onChange={handleOrderTypeChange}>
+                    <option value="">Todos</option>
+                    <option value="1">Orden de tienda</option>
+                    <option value="2">Orden de PedidosYa</option>
+                </select>
+            </div>
             <div className="table item-table orders">
                 {dailyOrders == null || dailyOrders.length === 0 ? (
                     <div>
@@ -68,6 +117,7 @@ const DailyOrders = ({user}: {user: any}) => {
                                 <th>Productos</th>
                                 <th>Total</th>
                                 <th>Metodo de pago</th>
+                                <th>Tipo de orden</th>
                                 <th>Estado</th>        
                              </tr>
                         </thead>
@@ -91,7 +141,8 @@ const DailyOrders = ({user}: {user: any}) => {
                                         }
                                         </td>
                                         <td>{order.total.toFixed(2)} BS</td>
-                                        <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                         <td>{order.paymentMethod == 1 ? "Tarjeta" : order.paymentMethod == 2 ? "QR" : "Efectivo"}</td>
+                                         <td>{order.orderType == 1 ? "Orden de tienda" : "Orden de PedidosYa"} </td>
                                         <td>{order.status == 1 ? "Pendiente" : order.status == 2 ? "Finalizada" :  "Cancelada"}</td>   
                                      </tr>
                                  )
@@ -103,4 +154,5 @@ const DailyOrders = ({user}: {user: any}) => {
         </div>
     )
 }
+
 export default DailyOrders;
