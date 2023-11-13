@@ -35,7 +35,6 @@ const OrderAnalytics = () => {
             orders = orders.map((order) => {
                 let user = users.find((user) => user.id === order.user_id)
                 return {
-
                     id: order.id,
                     userId: order.user_id,
                     total: order.items.reduce((acc : number, item : any) => { 
@@ -61,6 +60,13 @@ const OrderAnalytics = () => {
                     dateTime: convertUTCDateToLocalDate(new Date(order.created_at))
                 }
             })
+
+            orders = orders.sort((a, b) => {
+                const dateA = new Date(a.dateTime);
+                const dateB = new Date(b.dateTime);
+            
+                return dateB.getTime() - dateA.getTime();
+            });
 
             finalizedOrders = orders.filter((order) => order.status == 2)
             let stats = await calculateOrderStats(finalizedOrders)

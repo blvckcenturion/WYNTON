@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import orderService from "./services/orders";
 import convertUTCDateToLocalDate from "../utils/functions/convertUTCDateToLocalDate";
 import capitalize from "../utils/functions/capitalize";
+import authService from "../users/services/auth";
 
 const DailyOrders = ({ user }: { user: any }) => { 
     
@@ -14,14 +15,11 @@ const DailyOrders = ({ user }: { user: any }) => {
 
     useEffect(() => {
         (async () => {
+            let users: any[] = await authService.load()
             let canceledOrders: any[] = await orderService.load(0)
             let finalizedOrders: any[] = await orderService.load(2)
             
             let dailyOrders: any[] = [...canceledOrders, ...finalizedOrders]
-    
-            dailyOrders = dailyOrders.filter((order: any) => {
-                return order.user_id === user.id
-            });
     
             dailyOrders = dailyOrders.filter((order: any) => {
                 let today = convertUTCDateToLocalDate(new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())));
@@ -45,6 +43,7 @@ const DailyOrders = ({ user }: { user: any }) => {
             });
     
             dailyOrders = dailyOrders.map((order: any) => { 
+                let user = users.find((user) => user.id === order.user_id);
                 return {
                     id: order.id,
                     total: order.items.reduce((acc : number, item : any) => { 
@@ -63,6 +62,7 @@ const DailyOrders = ({ user }: { user: any }) => {
                             name: capitalize(item.product ? item.product.name : item.combo.denomination),
                         }
                     }),
+                    userName: user ? `${user.names} ${user.last_names}` : "Super Admin",
                     status: order.status,
                     dateTime: convertUTCDateToLocalDate(new Date(order.created_at)),
                 }
@@ -144,13 +144,14 @@ const DailyOrders = ({ user }: { user: any }) => {
                     <table>
                         <thead>
                              <tr>
-                                <th>#</th>
-                                <th>Fecha/Hora</th>
-                                <th>Productos</th>
-                                <th>Total</th>
-                                <th>Metodo de pago</th>
-                                <th>Tipo de orden</th>
-                                <th>Estado</th>        
+                                    <th>#</th>
+                                    <th>Fecha/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Productos</th>
+                                    <th>Total</th>
+                                    <th>Metodo de pago</th>
+                                    <th>Tipo de orden</th>
+                                    <th>Estado</th>        
                              </tr>
                         </thead>
                         <tbody>
@@ -159,6 +160,7 @@ const DailyOrders = ({ user }: { user: any }) => {
                                      <tr key={order.id}>
                                         <td>{order.id}</td>
                                         <td>{order.dateTime.toLocaleString()}</td>
+                                         <td>{order.userName}</td> 
                                         <td>
                                         {
                                             order.items.map((item: any) => {
