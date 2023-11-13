@@ -49,7 +49,7 @@ const OrderAnalytics = () => {
                             comboId: item.combo_id,
                             productId: item.product_id,
                             id: item.id,
-                            categoryId: item.product.category_id,
+                            categoryId: item.product ? item.product.category_id : null,
                             categoryName: categories.find((category: any) => category.id === item.product.category_id)?.name,
                             name: capitalize(item.product ? item.product.name : item.combo.denomination),
                         }
