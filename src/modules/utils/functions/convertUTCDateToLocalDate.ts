@@ -1,10 +1,10 @@
-function convertUTCDateToLocalDate(date : Date) {
-  const newDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
+function convertUTCDateToLocalDate(date: Date) {
+  const newDate = new Date(date.getTime());
 
-  const offset = date.getTimezoneOffset() / 60;
-  const hours = date.getHours();
-
-  newDate.setHours(hours - offset);
+  newDate.setUTCHours(date.getUTCHours());
+  newDate.setUTCMinutes(date.getUTCMinutes());
+  newDate.setUTCSeconds(date.getUTCSeconds());
+  newDate.setUTCMilliseconds(date.getUTCMilliseconds());
 
   return newDate;
 }
