@@ -50,7 +50,7 @@ const OrderAnalytics = () => {
                             productId: item.product_id,
                             id: item.id,
                             categoryId: item.product ? item.product.category_id : null,
-                            categoryName: categories.find((category: any) => category.id === item.product.category_id)?.name,
+                            categoryName: categories.find((category: any) => category.id === (item.product ? item.product.category_id : null))?.name,
                             name: capitalize(item.product ? item.product.name : item.combo.denomination),
                         }
                     }),
